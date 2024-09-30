@@ -25,7 +25,7 @@ from langchain_werewolf.setup import (
     'seed',
     [-1, 0, 1],
 )
-def test__generate_base_runnable_with_none(
+def test__generate_base_runnable_with_model_is_none(
     seed: int,
     mocker: MockerFixture,
 ) -> None:
@@ -37,29 +37,33 @@ def test__generate_base_runnable_with_none(
         return_value=mocker.MagicMock(spec=BaseChatModel),
     )
     # execution
-    _generate_base_runnable(None, seed=seed)
+    _generate_base_runnable(None, None, seed=seed)
     # assert
     create_chat_model_mock.assert_called_once_with(*expected_args, **expected_kwargs)  # noqa
 
 
 @pytest.mark.parametrize(
-    'seed',
-    [-1, 0, 1],
+    'model, seed',
+    [
+        ('gpt-3.5-turbo', -1),
+        ('gpt-4o-mini', 0),
+        ('gpt-4-turbo', 1),
+    ],
 )
-def test__generate_base_runnable_with_basechatmodel_player_config(
+def test__generate_base_runnable_with_chat_model(
+    model: str,
     seed: int,
     mocker: MockerFixture,
 ) -> None:
     # preparation
-    player_config = PlayerConfig(model='gpt-3.5-turbo')
-    expected_args = [player_config.model]
+    expected_args = [model]
     expected_kwargs = {'seed': seed if seed >= 0 else None}
     create_chat_model_mock = mocker.patch(
         'langchain_werewolf.setup.create_chat_model',
         return_value=mocker.MagicMock(spec=BaseChatModel),
     )
     # execution
-    _generate_base_runnable(player_config, seed=seed)
+    _generate_base_runnable(model, None, seed=seed)
     # assert
     create_chat_model_mock.assert_called_once_with(*expected_args, **expected_kwargs)  # noqa
 
@@ -80,7 +84,7 @@ def test__generate_base_runnable_with_cli_player_config(
         return_value=mocker.MagicMock(spec=Runnable[str, str]),
     )
     # execution
-    _generate_base_runnable(player_config)
+    _generate_base_runnable(player_config.model, player_config.input_output_type)  # noqa
     # assert
     create_input_runnable_mock.assert_called_once()
     actual_args, actual_kwargs = create_input_runnable_mock.call_args
@@ -96,11 +100,9 @@ def test__generate_base_runnable_with_cli_player_config(
 
 
 def test__generate_base_runnable_with_unsupported_config() -> None:
-    # preparation
-    player_config = PlayerConfig(model='cli', input_output_type=None)  # noqa
     # execution
     with pytest.raises(ValueError):
-        _generate_base_runnable(player_config)
+        _generate_base_runnable('cli', None)
 
 
 @pytest.mark.parametrize(
@@ -165,17 +167,19 @@ def test_generate_players() -> None:
     n_knights = 2
     n_fortune_tellers = 2
     custom_players = [
-        PlayerConfig(role=ERole.Werewolf),
-        PlayerConfig(role=ERole.Knight),
-        PlayerConfig(role=ERole.FortuneTeller),
-        PlayerConfig(role=ERole.Villager),
+        PlayerConfig(role=ERole.Werewolf, model='cli', input_output_type=EInputOutputType.standard),  # noqa
+        PlayerConfig(role=ERole.Knight, model='cli', input_output_type=EInputOutputType.standard),  # noqa
+        PlayerConfig(role=ERole.FortuneTeller, model='cli', input_output_type=EInputOutputType.standard),  # noqa
+        PlayerConfig(role=ERole.Villager, model='cli', input_output_type=EInputOutputType.standard),  # noqa
     ]
     actual = generate_players(
         n_players,
         n_werewolves,
         n_knights,
         n_fortune_tellers,
+        model='cli',
         seed=0,
+        input_output_type=EInputOutputType.standard,
         custom_players=custom_players,
     )
     assert len(actual) == n_players
@@ -192,7 +196,12 @@ def test__create_echo_runnable_by_player() -> None:
         name='Alice',
         runnable=RunnableLambda(str),
     )
-    isinstance(_create_echo_runnable_by_player(player), Runnable)
+    _create_echo_runnable_by_player(
+        player=player,
+        player_config=None,
+        model='cli',
+        input_output_type=EInputOutputType.standard,
+    )
 
 
 @pytest.mark.parametrize(
@@ -212,6 +221,7 @@ def test__create_echo_runnable_by_system(
         kind=EInputOutputType.standard,
         level=level,
         player_names=['name'],
+        model='cli',
     )
 
 

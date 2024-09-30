@@ -83,12 +83,14 @@ def main(
 
     # create players
     players = generate_players(
-        config_used.general.n_players,  # type: ignore  # noqa
-        config_used.general.n_werewolves,  # type: ignore  # noqa
-        config_used.general.n_knights,  # type: ignore  # noqa
-        config_used.general.n_fortune_tellers,  # type: ignore  # noqa
-        config_used.general.seed,  # type: ignore  # noqa
-        config_used.players,
+        config_used.general.n_players,  # type: ignore
+        config_used.general.n_werewolves,  # type: ignore
+        config_used.general.n_knights,  # type: ignore
+        config_used.general.n_fortune_tellers,  # type: ignore
+        model=config_used.general.model,
+        seed=config_used.general.seed,  # type: ignore
+        input_output_type=config_used.general.system_interface,  # type: ignore # noqa
+        custom_players=config_used.players,
     )
 
     # create game workflow

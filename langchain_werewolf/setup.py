@@ -46,38 +46,39 @@ from .utils import consecutive_string_generator
 
 
 def _generate_base_runnable(
-    config: PlayerConfig | None,
+    model: str | None,
+    input_output_type: EInputOutputType | None,
     seed: int | None = None,
 ) -> BaseChatModel | Runnable[str, str]:
-    if config is None:
+    if model is None:
         return create_chat_model(
             DEFAULT_MODEL,
             seed=seed if seed is not None and seed >= 0 else None,
         )
     elif (
-        config.model in MODEL_SERVICE_MAP
-        and MODEL_SERVICE_MAP[config.model] in {
+        model in MODEL_SERVICE_MAP
+        and MODEL_SERVICE_MAP[model] in {
             EChatService.OpenAI,
             EChatService.Google,
             EChatService.Groq,
         }
     ):
         return create_chat_model(
-            config.model,
+            model,
             seed=seed if seed is not None and seed >= 0 else None,
         )
     elif (
-        config.model in MODEL_SERVICE_MAP
-        and MODEL_SERVICE_MAP[config.model] == EChatService.CLI
-        and config.input_output_type is not None
+        model in MODEL_SERVICE_MAP
+        and MODEL_SERVICE_MAP[model] == EChatService.CLI
+        and input_output_type is not None
     ):
         return create_input_runnable(
-            input_func=config.input_output_type,
+            input_func=input_output_type,
             styler=partial(click.style, fg=CLI_PROMPT_COLOR),
             prompt_suffix=CLI_PROMPT_SUFFIX,
         )
     else:
-        raise ValueError(f'Unsupported config: {config}')
+        raise ValueError(f'Unsupported: model={model}, input_output_type={input_output_type}')  # noqa
 
 
 def generate_players(
@@ -85,8 +86,10 @@ def generate_players(
     n_werewolves: int,
     n_knights: int,
     n_fortune_tellers: int,
-    seed: int,
-    custom_players: list[PlayerConfig],
+    custom_players: list[PlayerConfig] = [],
+    model: str | None = None,
+    seed: int = -1,
+    input_output_type: EInputOutputType | None = None,
     logger: Logger = getLogger(__name__),
 ) -> list[BaseGamePlayer]:
 
@@ -142,7 +145,11 @@ def generate_players(
         BaseGamePlayer.instantiate(
             role=player_cfg.role if player_cfg and player_cfg.role else generated_roles.pop(),  # noqa
             name=player_cfg.name if player_cfg and player_cfg.name else name_generator.__next__(),  # noqa
-            runnable=generate_game_player_runnable(_generate_base_runnable(player_cfg, seed)),  # noqa
+            runnable=generate_game_player_runnable(_generate_base_runnable(
+                player_cfg.model if hasattr(player_cfg, 'model') else model,  # type: ignore # noqa
+                player_cfg.input_output_type if hasattr(player_cfg, 'input_output_type') else input_output_type,  # type: ignore # noqa
+                seed
+            )),
             output=(
                 create_output_runnable(player_cfg.input_output_type)
                 if player_cfg and player_cfg.input_output_type
@@ -159,7 +166,10 @@ def generate_players(
 
 def _create_echo_runnable_by_player(
     player: BaseGamePlayer,
+    *,
     player_config: PlayerConfig | None = None,
+    model: str = DEFAULT_MODEL,
+    input_output_type: EInputOutputType | None = None,
     cache: set[str] | None = None,
     color: str | None = None,
     language: ELanguage = BASE_LANGUAGE,
@@ -179,7 +189,11 @@ def _create_echo_runnable_by_player(
                         | RunnableLambda(MsgModel.format)
                         | create_translator_runnable(
                             to_language=language,
-                            chat_llm=_generate_base_runnable(player_config, seed=seed),  # noqa
+                            chat_llm=_generate_base_runnable(
+                                player_config.model if hasattr(player_config, 'model') else model,  # type: ignore # noqa
+                                player_config.input_output_type if hasattr(player_config, 'input_output_type') else input_output_type,  # type: ignore # noqa
+                                seed=seed
+                            ),
                         )
                         | create_output_runnable(
                             output_func=player.receive_message,
@@ -197,6 +211,7 @@ def _create_echo_runnable_by_player(
 def _create_echo_runnable_by_system(
     kind: EInputOutputType,
     level: ESystemOutputType | str,
+    *,
     model: str = DEFAULT_MODEL,
     player_names: list[str] | None = None,
     cache: set[str] | None = None,
@@ -239,7 +254,8 @@ def _create_echo_runnable_by_system(
                                     RunnableLambda(MsgModel.format)
                                     | create_translator_runnable(
                                         to_language=language,
-                                        chat_llm=create_chat_model(model, seed=seed),  # noqa
+                                        chat_llm=create_chat_model(model, seed=seed) if language != BASE_LANGUAGE else RunnablePassthrough(),  # noqa
+                                        # FIXME: Conditioning by language is not good # noqa
                                     )
                                     | create_output_runnable(
                                         output_func=kind,
@@ -254,7 +270,8 @@ def _create_echo_runnable_by_system(
                             RunnableLambda(MsgModel.format)
                             | create_translator_runnable(
                                 to_language=language,
-                                chat_llm=create_chat_model(model, seed=seed),  # noqa
+                                chat_llm=create_chat_model(model, seed=seed) if language != BASE_LANGUAGE else RunnablePassthrough(),  # noqa
+                                # FIXME: Conditioning by language is not good
                             )
                             | create_output_runnable(
                                 output_func=kind,
@@ -302,6 +319,8 @@ def create_echo_runnable(
                     player_config=cfg,
                     cache=caches[player.name],
                     color=player_colors_[player.name],
+                    model=model,
+                    input_output_type=input_output_type,
                     language=language,
                     seed=seed,
                 )
