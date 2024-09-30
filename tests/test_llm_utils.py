@@ -37,7 +37,7 @@ def test_create_chat_model_with_default(
 ) -> None:
     # preparation
     seed = generate_int()
-    base_chat_model_mock = mocker.MagicMock(spec=type[BaseChatModel])
+    base_chat_model_mock = mocker.MagicMock()
     mocker.patch('langchain_werewolf.llm_utils._service2cls', defaultdict(lambda: base_chat_model_mock))  # noqa
     # execution
     actual = create_chat_model(seed=seed)
@@ -56,7 +56,7 @@ def test_create_chat_model_with_str(
 ) -> None:
     # preparation
     seed = generate_int()
-    base_chat_model_mock = mocker.MagicMock(spec=type[BaseChatModel])
+    base_chat_model_mock = mocker.MagicMock()
     mocker.patch('langchain_werewolf.llm_utils._service2cls', defaultdict(lambda: base_chat_model_mock))  # noqa
     # execution
     actual = create_chat_model(llm_name, seed=seed)
