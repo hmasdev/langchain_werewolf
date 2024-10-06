@@ -77,7 +77,7 @@ def main(
             recursion_limit=config.general.recursion_limit if config.general.recursion_limit is not None else recursion_limit,  # noqa
             debug=config.general.debug if config.general.debug is not None else debug,  # noqa
             verbose=config.general.verbose if config.general.verbose is not None else verbose,  # noqa
-        ) | config.general.model_dump(),
+        ),
         players=config.players,
         game=config.game,
     )
