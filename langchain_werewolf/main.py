@@ -41,7 +41,7 @@ def main(
     output: str = DEFAULT_GENERAL_CONFIG.output,  # type: ignore # noqa
     cli_output_level:  ESystemOutputType | str = DEFAULT_GENERAL_CONFIG.cli_output_level,  # type: ignore # noqa
     system_interface: EInputOutputType = DEFAULT_GENERAL_CONFIG.system_interface,  # type: ignore # noqa
-    config: str = '',
+    config: Config | str | None = None,
     seed: int = DEFAULT_GENERAL_CONFIG.seed,  # type: ignore # noqa
     model: str = DEFAULT_GENERAL_CONFIG.model,  # type: ignore # noqa
     recursion_limit: int = DEFAULT_GENERAL_CONFIG.recursion_limit,  # type: ignore # noqa
@@ -50,28 +50,36 @@ def main(
     logger: logging.Logger = logging.getLogger(__name__),
 ):
     # load config
-    try:
-        config_ = load_json(Config, config) if config else DEFAULT_CONFIG  # noqa
-    except (pydantic.ValidationError, FileNotFoundError):
-        logger.warning(f'Failed to load config: {config}')
-        config_ = DEFAULT_CONFIG
+    if isinstance(config, Config):
+        config = config
+    elif isinstance(config, str):
+        try:
+            config = load_json(Config, config) if config else DEFAULT_CONFIG  # noqa
+        except (pydantic.ValidationError, FileNotFoundError):
+            logger.warning(f'Failed to load config: {config}')
+            config = DEFAULT_CONFIG
+    else:
+        config = DEFAULT_CONFIG
 
     # override config
+    # NOTE: 'config' is prioritized over CLI arguments
     config_used = Config(
         general=GeneralConfig(
-            n_players=n_players,
-            n_werewolves=n_werewolves,
-            n_knights=n_knights,
-            n_fortune_tellers=n_fortune_tellers,
-            output=output,
-            cli_output_level=cli_output_level,
-            system_interface=system_interface,
-            seed=seed,
-            model=model,
-            recursion_limit=recursion_limit,
-            debug=debug,
-            verbose=verbose,
-        )
+            n_players=config.general.n_players if config.general.n_players is not None else n_players,  # noqa
+            n_werewolves=config.general.n_werewolves if config.general.n_werewolves is not None else n_werewolves,  # noqa
+            n_knights=config.general.n_knights if config.general.n_knights is not None else n_knights,  # noqa
+            n_fortune_tellers=config.general.n_fortune_tellers if config.general.n_fortune_tellers is not None else n_fortune_tellers,  # noqa
+            output=config.general.output if config.general.output is not None else output,  # noqa
+            cli_output_level=config.general.cli_output_level if config.general.cli_output_level is not None else cli_output_level,  # noqa
+            system_interface=config.general.system_interface if config.general.system_interface is not None else system_interface,  # noqa
+            seed=config.general.seed if config.general.seed is not None else seed,  # noqa
+            model=config.general.model if config.general.model is not None else model,  # noqa
+            recursion_limit=config.general.recursion_limit if config.general.recursion_limit is not None else recursion_limit,  # noqa
+            debug=config.general.debug if config.general.debug is not None else debug,  # noqa
+            verbose=config.general.verbose if config.general.verbose is not None else verbose,  # noqa
+        ),
+        players=config.players,
+        game=config.game,
     )
 
     # setup
@@ -98,23 +106,23 @@ def main(
         players,
         **{
             k: remove_none_values(dic)
-            for k, dic in config_.game.model_dump().items()
+            for k, dic in config_used.game.model_dump().items()
         },
         echo=create_echo_runnable(
             config_used.general.system_interface,  # type: ignore # noqa,
             config_used.general.cli_output_level,  # type: ignore # noqa
             players=players,
-            players_cfg=config_.players,
-            model=config_.general.model,  # type: ignore
-            seed=config_.general.seed,  # type: ignore
-        ),  # noqa
+            players_cfg=config_used.players,
+            model=config_used.general.model,  # type: ignore
+            seed=config_used.general.seed,  # type: ignore
+        ),
     )
 
     # run
     raw_state: dict[str, object] = workflow.invoke(
         StateModel(alive_players_names=[player.name for player in players]),
         config={"recursion_limit": config_used.general.recursion_limit},  # type: ignore  # noqa
-        debug=config_.general.debug,
+        debug=config_used.general.debug,
     )
 
     # save
