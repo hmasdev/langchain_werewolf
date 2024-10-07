@@ -18,6 +18,7 @@ from ..models.state import (
 )
 
 TBaseGamePlayer = TypeVar('TBaseGamePlayer', bound='BaseGamePlayer')
+_DEFAULT_FORMATTER = MsgModel.format
 
 
 class GamePlayerRunnableInputModel(BaseModel):
@@ -39,16 +40,37 @@ class BaseGamePlayer(BaseModel, frozen=True):
 
     runnable: SkipValidation[Runnable[GamePlayerRunnableInputModel, str]] = Field(title="the runnable of the player")  # noqa
     output: SkipValidation[Runnable[str, None] | None] = Field(default=None, title="the output of the player")  # noqa
+    formatter: Callable[[MsgModel], str] | str | None = Field(default=None, title="the formatter of the player")  # noqa
 
     @field_validator('output')
     @classmethod
     def _preprocess_output(
         cls,
-        output: Callable[[str], None] | Runnable[str, None] | None,
+        output: Callable[[str], None] | Runnable[str, None] | None = None,
     ) -> Runnable[str, None] | None:
         if output is not None and not isinstance(output, Runnable):
             return RunnableLambda(output)
         return output
+
+    @field_validator('formatter')
+    @classmethod
+    def _validate_formatter(
+        cls,
+        formatter: Callable[[MsgModel], str] | str | None = None,
+    ) -> Callable[[MsgModel], str] | str:
+        formatter = formatter or _DEFAULT_FORMATTER
+        if isinstance(formatter, str):
+            try:
+                # test
+                formatter.format(**MsgModel(name='name', message='message').model_dump())  # noqa
+            except KeyError:
+                raise ValueError(
+                    "The formatter should not includes anything other than "
+                    + ', '.join('"{'+k+'}"' for k in MsgModel.model_fields.keys())  # noqa
+                    + '. But the formatter is '
+                    + f'"{formatter}".'
+                )
+        return formatter
 
     def act_in_night(
         self,
@@ -80,8 +102,12 @@ class BaseGamePlayer(BaseModel, frozen=True):
         Args:
             message (MsgModel): the message to show
         """
+        formatter = self.formatter or _DEFAULT_FORMATTER
         if self.output:
-            self.output.invoke(message.format())
+            if isinstance(formatter, str):
+                self.output.invoke(formatter.format(**message.model_dump()))  # noqa
+            else:
+                self.output.invoke(formatter(message))
 
     def generate_message(
         self,
@@ -123,7 +149,6 @@ class BaseGamePlayer(BaseModel, frozen=True):
         role: ERole,
         name: str,
         runnable: Runnable[GamePlayerRunnableInputModel, str],
-        output: Runnable[str, None] | None = None,
         **kwargs,
     ) -> TBaseGamePlayer:
         """Instantiate a player

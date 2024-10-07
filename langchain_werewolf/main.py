@@ -7,7 +7,7 @@ import pydantic
 from .enums import ESystemOutputType, EInputOutputType
 from .game.main import create_game_graph
 from .models.config import Config,  GeneralConfig
-from .models.state import StateModel
+from .models.state import StateModel, MsgModel
 from .setup import generate_players, create_echo_runnable
 from .utils import (
     load_json,
@@ -23,6 +23,7 @@ DEFAULT_CONFIG = Config(
         output='',
         cli_output_level=ESystemOutputType.all,
         system_interface=EInputOutputType.standard,
+        system_formatter=None,
         seed=-1,
         model='gpt-4o-mini',
         recursion_limit=1000,
@@ -41,6 +42,7 @@ def main(
     output: str = DEFAULT_GENERAL_CONFIG.output,  # type: ignore # noqa
     cli_output_level:  ESystemOutputType | str = DEFAULT_GENERAL_CONFIG.cli_output_level,  # type: ignore # noqa
     system_interface: EInputOutputType = DEFAULT_GENERAL_CONFIG.system_interface,  # type: ignore # noqa
+    system_formatter: str | None = DEFAULT_GENERAL_CONFIG.system_formatter,  # type: ignore # noqa
     config: Config | str | None = None,
     seed: int = DEFAULT_GENERAL_CONFIG.seed,  # type: ignore # noqa
     model: str = DEFAULT_GENERAL_CONFIG.model,  # type: ignore # noqa
@@ -72,6 +74,7 @@ def main(
             output=config.general.output if config.general.output is not None else output,  # noqa
             cli_output_level=config.general.cli_output_level if config.general.cli_output_level is not None else cli_output_level,  # noqa
             system_interface=config.general.system_interface if config.general.system_interface is not None else system_interface,  # noqa
+            system_formatter=config.general.system_formatter if config.general.system_formatter is not None else system_formatter,  # noqa
             seed=config.general.seed if config.general.seed is not None else seed,  # noqa
             model=config.general.model if config.general.model is not None else model,  # noqa
             recursion_limit=config.general.recursion_limit if config.general.recursion_limit is not None else recursion_limit,  # noqa
@@ -114,6 +117,7 @@ def main(
             players=players,
             players_cfg=config_used.players,
             model=config_used.general.model,  # type: ignore
+            system_formatter=config_used.general.system_formatter,  # type: ignore # noqa
             seed=config_used.general.seed,  # type: ignore
         ),
     )
@@ -140,6 +144,7 @@ def main(
 @click.option('-o', '--output', default=DEFAULT_GENERAL_CONFIG.output, help=f'The output file. Defaults to "{DEFAULT_GENERAL_CONFIG.output}".')  # noqa
 @click.option('-l', '--cli-output-level', default=DEFAULT_GENERAL_CONFIG.cli_output_level.name if isinstance(DEFAULT_GENERAL_CONFIG.cli_output_level, ESystemOutputType) else DEFAULT_GENERAL_CONFIG.cli_output_level, help=f'The output type of the CLI. {list(ESystemOutputType.__members__.keys())} and player names are valid. Default is All.')  # noqa
 @click.option('--system-interface', default=DEFAULT_GENERAL_CONFIG.system_interface.name if isinstance(DEFAULT_GENERAL_CONFIG.system_interface, EInputOutputType) else DEFAULT_GENERAL_CONFIG.system_interface, help=f'The system interface. Default is {DEFAULT_GENERAL_CONFIG.system_interface}.')  # noqa
+@click.option('--system-formatter', default=DEFAULT_GENERAL_CONFIG.system_formatter, help=f'The system formatter. The format should not include anything other than ' + ', '.join('"{'+k+'}"' for k in MsgModel.model_fields.keys()) + '.')  # noqa
 @click.option('-c', '--config', default='', help='The configuration file. Defaults to "". Note that you can specify CLI arguments in this config file but the config file overwrite the CLI arguments.')  # noqa
 @click.option('--seed', default=DEFAULT_GENERAL_CONFIG.seed, help=f'The random seed. Defaults to {DEFAULT_GENERAL_CONFIG.seed}.')  # noqa
 @click.option('--model', default=DEFAULT_GENERAL_CONFIG.model, help=f'The model to use. Default is {DEFAULT_GENERAL_CONFIG.model}.')  # noqa
@@ -154,6 +159,7 @@ def cli(
     output: str = DEFAULT_GENERAL_CONFIG.output,  # type: ignore # noqa
     cli_output_level:  str = DEFAULT_GENERAL_CONFIG.cli_output_level.name,  # type: ignore # noqa
     system_interface: str = DEFAULT_GENERAL_CONFIG.system_interface.name,  # type: ignore # noqa
+    system_formatter: str = DEFAULT_GENERAL_CONFIG.system_formatter,  # type: ignore # noqa
     config: str = '',  # type: ignore # noqa
     seed: int = DEFAULT_GENERAL_CONFIG.seed,  # type: ignore # noqa
     model: str = DEFAULT_GENERAL_CONFIG.model,  # type: ignore # noqa
@@ -176,6 +182,7 @@ def cli(
         output=output,
         cli_output_level=cli_output_level,
         system_interface=system_interface,  # type: ignore
+        system_formatter=system_formatter,
         config=config,
         seed=seed,
         model=model,

@@ -6,6 +6,7 @@ from ..enums import (
     ESpeakerSelectionMethod,
     ESystemOutputType,
 )
+from .state import MsgModel
 from ..utils import consecutive_string_generator
 
 
@@ -20,6 +21,7 @@ class GeneralConfig(BaseModel, frozen=True):
         title=f"The output type of the CLI. {list(ESystemOutputType.__members__.keys())} and player names are valid. Default is None.",  # noqa
     )
     system_interface: EInputOutputType | None = Field(default=None, title="The system interface. Default is None.")  # noqa
+    system_formatter: str | None = Field(default=None, title="The system formatter. The format should not include anything other than " + ', '.join('"{'+k+'}"' for k in MsgModel.model_fields.keys()))  # noqa
     seed: int | None = Field(default=None, title="The random seed. Defaults to None.")  # noqa
     model: str | None = Field(default=None, title=f"The model to use. Default is None.")  # noqa
     recursion_limit: int | None = Field(default=None, title="The recursion limit. Default is None.")  # noqa
@@ -32,6 +34,7 @@ class PlayerConfig(BaseModel, frozen=True):
     role: ERole | None = Field(default=None, title="The role of the player")  # noqa
     model: str = Field(default=DEFAULT_MODEL, title=f"The model to use. Default is {DEFAULT_MODEL}.")  # noqa
     input_output_type: EInputOutputType | None = Field(default=None, title="The input output type of the player")  # noqa
+    formatter: str | None = Field(default=None, title="The formatter of the player. The format should not include anything other than " + ', '.join('"{'+k+'}"' for k in MsgModel.model_fields.keys()))  # noqa
 
 
 class GameConfig(BaseModel, frozen=True):
