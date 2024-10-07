@@ -21,6 +21,7 @@ class GeneralConfig(BaseModel, frozen=True):
         title=f"The output type of the CLI. {list(ESystemOutputType.__members__.keys())} and player names are valid. Default is None.",  # noqa
     )
     system_interface: EInputOutputType | None = Field(default=None, title="The system interface. Default is None.")  # noqa
+    system_formatter: str | None = Field(default=None, title="The system formatter. The format should not include anything other than " + ', '.join('"{'+k+'}"' for k in MsgModel.model_fields.keys()))  # noqa
     seed: int | None = Field(default=None, title="The random seed. Defaults to None.")  # noqa
     model: str | None = Field(default=None, title=f"The model to use. Default is None.")  # noqa
     recursion_limit: int | None = Field(default=None, title="The recursion limit. Default is None.")  # noqa

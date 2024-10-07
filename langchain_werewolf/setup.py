@@ -4,7 +4,7 @@ from itertools import chain, cycle
 from logging import getLogger, Logger
 from operator import attrgetter
 import random
-from typing import Iterable
+from typing import Callable, Iterable
 import click
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.runnables import (
@@ -177,6 +177,7 @@ def _create_echo_runnable_by_player(
     seed: int = -1,
 ) -> Runnable[StateModel, None]:
     cache = cache or set()  # NOTE: if cache is None, cache does not work
+    # create runnable
     return (
         RunnableLambda(lambda state: filter_state_according_to_player(player, state))  # noqa
         | RunnableLambda(lambda state: get_related_messsages_with_id(player.name, state))  # noqa
@@ -187,15 +188,21 @@ def _create_echo_runnable_by_player(
                     to_cache=RunnableLambda(attrgetter('id')) | RunnableLambda(cache.add),  # noqa
                     echo=(
                         RunnableLambda(attrgetter('value'))
-                        | RunnableLambda(MsgModel.format)
-                        | create_translator_runnable(
-                            to_language=language,
-                            chat_llm=_generate_base_runnable(
-                                player_config.model if hasattr(player_config, 'model') else model,  # type: ignore # noqa
-                                player_config.input_output_type if hasattr(player_config, 'input_output_type') else input_output_type,  # type: ignore # noqa
-                                seed=seed
+                        | RunnableParallel(
+                            orig=RunnablePassthrough(),
+                            translated_msg=(
+                                RunnableLambda(attrgetter('message'))
+                                | create_translator_runnable(
+                                    to_language=language,
+                                    chat_llm=_generate_base_runnable(
+                                        player_config.model if hasattr(player_config, 'model') else model,  # type: ignore # noqa
+                                        player_config.input_output_type if hasattr(player_config, 'input_output_type') else input_output_type,  # type: ignore # noqa
+                                        seed=seed
+                                    ),
+                                )
                             ),
                         )
+                        | RunnableLambda(lambda dic: MsgModel(**(dic['orig'] | {'message': dic['translated_msg']})))  # noqa
                         | create_output_runnable(
                             output_func=player.receive_message,
                             styler=partial(click.style, fg=color or CLI_PROMPT_COLOR),  # noqa
@@ -218,6 +225,7 @@ def _create_echo_runnable_by_system(
     cache: set[str] | None = None,
     color: str | dict[str, str] | None = None,
     language: ELanguage = BASE_LANGUAGE,
+    formatter: Callable[[MsgModel], str] | str | None = None,
     seed: int = -1,
 ) -> Runnable[StateModel, None]:
     # initialize
@@ -235,7 +243,32 @@ def _create_echo_runnable_by_system(
     # create runnable
     if system_related is None:
         return RunnableLambda(lambda _: None)
-
+    # preprocess formatter
+    formatter = formatter or MsgModel.format
+    formatter_runnable: Runnable[MsgModel, str]
+    if isinstance(formatter, str):
+        formatter_runnable = (
+            RunnableLambda(MsgModel.model_dump)
+            | RunnableLambda(lambda dic: formatter.format(**dic))
+        )
+    else:
+        formatter_runnable = RunnableLambda(formatter)
+    formatter_runnable = (
+        RunnableParallel(
+            orig=RunnablePassthrough(),
+            translated_msg=(
+                RunnableLambda(attrgetter('message'))
+                | create_translator_runnable(
+                    to_language=language,
+                    chat_llm=create_chat_model(model, seed=seed) if language != BASE_LANGUAGE else RunnablePassthrough(),  # noqa
+                    # FIXME: Conditioning by language is not good # noqa
+                )
+            ),
+        ).with_types(input_type=MsgModel)
+        | RunnableLambda(lambda dic: MsgModel(**(dic['orig'] | {'message': dic['translated_msg']})))  # noqa
+        | formatter_runnable
+    )
+    # create runnable
     return (
         RunnableLambda(lambda state: get_related_messsages_with_id(system_related, state))  # noqa
         | RunnableBranch(
@@ -252,12 +285,7 @@ def _create_echo_runnable_by_system(
                             *[
                                 (
                                     RunnableLambda(attrgetter('name')) | RunnableLambda(name.__eq__),  # noqa
-                                    RunnableLambda(MsgModel.format)
-                                    | create_translator_runnable(
-                                        to_language=language,
-                                        chat_llm=create_chat_model(model, seed=seed) if language != BASE_LANGUAGE else RunnablePassthrough(),  # noqa
-                                        # FIXME: Conditioning by language is not good # noqa
-                                    )
+                                    formatter_runnable
                                     | create_output_runnable(
                                         output_func=kind,
                                         styler=partial(
@@ -268,12 +296,7 @@ def _create_echo_runnable_by_system(
                                 )
                                 for name in player_names
                             ],
-                            RunnableLambda(MsgModel.format)
-                            | create_translator_runnable(
-                                to_language=language,
-                                chat_llm=create_chat_model(model, seed=seed) if language != BASE_LANGUAGE else RunnablePassthrough(),  # noqa
-                                # FIXME: Conditioning by language is not good
-                            )
+                            formatter_runnable
                             | create_output_runnable(
                                 output_func=kind,
                                 styler=partial(
@@ -297,6 +320,7 @@ def create_echo_runnable(
     players: Iterable[BaseGamePlayer] = tuple(),
     players_cfg: Iterable[PlayerConfig] = tuple(),
     model: str = DEFAULT_MODEL,
+    system_formatter: Callable[[MsgModel], str] | str | None = None,
     system_color: str = CLI_PROMPT_COLOR,
     player_colors: Iterable[str] = cycle(CLI_ECHO_COLORS),
     language: ELanguage = BASE_LANGUAGE,
@@ -336,6 +360,7 @@ def create_echo_runnable(
                     cache=caches[GAME_MASTER_NAME],
                     color=player_colors_ | {GAME_MASTER_NAME: system_color},
                     language=language,
+                    formatter=system_formatter,
                     seed=seed,
                 ),
             },  # type: ignore
