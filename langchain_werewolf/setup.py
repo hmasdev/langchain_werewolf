@@ -202,7 +202,7 @@ def _create_echo_runnable_by_player(
                                 )
                             ),
                         )
-                        | RunnableLambda(lambda dic: MsgModel(**(dic['orig'] | {'message': dic['translated_msg']})))  # noqa
+                        | RunnableLambda(lambda dic: MsgModel(**(dic['orig'].model_dump() | {'message': dic['translated_msg']})))  # noqa
                         | create_output_runnable(
                             output_func=player.receive_message,
                             styler=partial(click.style, fg=color or CLI_PROMPT_COLOR),  # noqa
@@ -265,7 +265,7 @@ def _create_echo_runnable_by_system(
                 )
             ),
         ).with_types(input_type=MsgModel)
-        | RunnableLambda(lambda dic: MsgModel(**(dic['orig'] | {'message': dic['translated_msg']})))  # noqa
+        | RunnableLambda(lambda dic: MsgModel(**(dic['orig'].model_dump() | {'message': dic['translated_msg']})))  # noqa
         | formatter_runnable
     )
     # create runnable

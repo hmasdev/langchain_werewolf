@@ -117,7 +117,7 @@ def main(
             players=players,
             players_cfg=config_used.players,
             model=config_used.general.model,  # type: ignore
-            system_formatter=config_.general.system_formatter,  # type: ignore
+            system_formatter=config_used.general.system_formatter,  # type: ignore # noqa
             seed=config_used.general.seed,  # type: ignore
         ),
     )
@@ -159,6 +159,7 @@ def cli(
     output: str = DEFAULT_GENERAL_CONFIG.output,  # type: ignore # noqa
     cli_output_level:  str = DEFAULT_GENERAL_CONFIG.cli_output_level.name,  # type: ignore # noqa
     system_interface: str = DEFAULT_GENERAL_CONFIG.system_interface.name,  # type: ignore # noqa
+    system_formatter: str = DEFAULT_GENERAL_CONFIG.system_formatter,  # type: ignore # noqa
     config: str = '',  # type: ignore # noqa
     seed: int = DEFAULT_GENERAL_CONFIG.seed,  # type: ignore # noqa
     model: str = DEFAULT_GENERAL_CONFIG.model,  # type: ignore # noqa
@@ -181,6 +182,7 @@ def cli(
         output=output,
         cli_output_level=cli_output_level,
         system_interface=system_interface,  # type: ignore
+        system_formatter=system_formatter,
         config=config,
         seed=seed,
         model=model,
