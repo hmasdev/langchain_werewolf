@@ -155,6 +155,7 @@ def generate_players(
                 if player_cfg and player_cfg.input_output_type
                 else None
             ),
+            formatter=player_cfg.formatter if player_cfg and player_cfg.formatter else None,  # noqa
         )
         for player_cfg in players_cfg
     ]
