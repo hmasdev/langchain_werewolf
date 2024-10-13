@@ -213,8 +213,6 @@ def test__create_echo_runnable_by_player() -> None:
     _create_echo_runnable_by_player(
         player=player,
         player_config=None,
-        model='cli',
-        input_output_type=EInputOutputType.standard,
     )
 
 
@@ -243,7 +241,7 @@ def test__create_echo_runnable_by_system_with_invalid_level() -> None:
     # assert
     with pytest.raises(ValueError):
         _create_echo_runnable_by_system(
-            kind=EInputOutputType.standard,
+            output_func=EInputOutputType.standard,
             level='invalid',
             player_names=['name'],
         )
@@ -275,8 +273,8 @@ def test_create_echo_runnable(mocker: MockerFixture) -> None:
     ]
     # execute
     create_echo_runnable(
-        input_output_type=EInputOutputType.standard,
-        cli_output_level=ESystemOutputType.all,
+        system_output_interface=EInputOutputType.standard,
+        system_output_level=ESystemOutputType.all,
         players=players,
         players_cfg=[PlayerConfig(role=player.role) for player in players],
     )

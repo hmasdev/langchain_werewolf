@@ -1,5 +1,6 @@
 import logging
 import random
+from typing import Any, Callable
 import click
 from dotenv import load_dotenv
 from langchain.globals import set_verbose, set_debug
@@ -42,8 +43,8 @@ def main(
     n_fortune_tellers: int = DEFAULT_GENERAL_CONFIG.n_fortune_tellers,  # type: ignore # noqa
     output: str = DEFAULT_GENERAL_CONFIG.output,  # type: ignore # noqa
     system_output_level:  ESystemOutputType | str = DEFAULT_GENERAL_CONFIG.system_output_level,  # type: ignore # noqa
-    system_input_interface: EInputOutputType = DEFAULT_GENERAL_CONFIG.system_input_interface,  # type: ignore # noqa
-    system_output_interface: EInputOutputType = DEFAULT_GENERAL_CONFIG.system_output_interface,  # type: ignore # noqa
+    system_output_interface: Callable[[str], None] | EInputOutputType = DEFAULT_GENERAL_CONFIG.system_output_interface,  # type: ignore # noqa
+    system_input_interface: Callable[[str], Any] | EInputOutputType = DEFAULT_GENERAL_CONFIG.system_input_interface,  # type: ignore # noqa
     system_formatter: str | None = DEFAULT_GENERAL_CONFIG.system_formatter,  # type: ignore # noqa
     config: Config | str | None = None,
     seed: int = DEFAULT_GENERAL_CONFIG.seed,  # type: ignore # noqa
