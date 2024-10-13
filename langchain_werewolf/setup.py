@@ -147,12 +147,12 @@ def generate_players(
             name=player_cfg.name if player_cfg and player_cfg.name else name_generator.__next__(),  # noqa
             runnable=generate_game_player_runnable(_generate_base_runnable(
                 player_cfg.model if hasattr(player_cfg, 'model') else model,  # type: ignore # noqa
-                player_cfg.input_output_type if hasattr(player_cfg, 'input_output_type') else input_output_type,  # type: ignore # noqa
+                player_cfg.player_input_interface if hasattr(player_cfg, 'input_output_type') else input_output_type,  # type: ignore # noqa
                 seed
             )),
             output=(
-                create_output_runnable(player_cfg.input_output_type)
-                if player_cfg and player_cfg.input_output_type
+                create_output_runnable(player_cfg.player_output_interface)
+                if player_cfg and player_cfg.player_output_interface
                 else None
             ),
             formatter=player_cfg.formatter if player_cfg and player_cfg.formatter else None,  # noqa
@@ -196,7 +196,7 @@ def _create_echo_runnable_by_player(
                                     to_language=language,
                                     chat_llm=_generate_base_runnable(
                                         player_config.model if hasattr(player_config, 'model') else model,  # type: ignore # noqa
-                                        player_config.input_output_type if hasattr(player_config, 'input_output_type') else input_output_type,  # type: ignore # noqa
+                                        player_config.player_output_interface if hasattr(player_config, 'input_output_type') else input_output_type,  # type: ignore # noqa
                                         seed=seed
                                     ),
                                 )

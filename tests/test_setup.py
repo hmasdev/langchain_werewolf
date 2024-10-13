@@ -1,4 +1,5 @@
 from functools import partial
+from typing import Callable
 import click
 from langchain_core.language_models import BaseChatModel
 from langchain_core.runnables import Runnable, RunnableLambda
@@ -8,10 +9,23 @@ from langchain_werewolf.const import (
     DEFAULT_MODEL,
     CLI_PROMPT_COLOR,
     CLI_PROMPT_SUFFIX,
+    GAME_MASTER_NAME,
 )
-from langchain_werewolf.enums import EInputOutputType, ERole, ESystemOutputType  # noqa
+from langchain_werewolf.enums import (
+    EInputOutputType,
+    ELanguage,
+    ERole,
+    ESystemOutputType,
+    ETimeSpan,
+)
 from langchain_werewolf.game_players.base import BaseGamePlayer
 from langchain_werewolf.models.config import PlayerConfig
+from langchain_werewolf.models.state import (
+    ChatHistoryModel,
+    IdentifiedModel,
+    MsgModel,
+    StateModel,
+)
 from langchain_werewolf.setup import (
     _create_echo_runnable_by_player,
     _create_echo_runnable_by_system,
@@ -72,10 +86,10 @@ def test__generate_base_runnable_with_cli_player_config(
     mocker: MockerFixture,
 ) -> None:
     # preparation
-    player_config = PlayerConfig(model='cli', input_output_type=EInputOutputType.standard)  # noqa
+    player_config = PlayerConfig(model='cli', player_input_interface=EInputOutputType.standard)  # noqa
     expected_args = []  # type: ignore
     expected_kwargs = {
-        'input_func': player_config.input_output_type,
+        'input_func': player_config.player_input_interface,
         'styler': partial(click.style, fg=CLI_PROMPT_COLOR),
         'prompt_suffix': CLI_PROMPT_SUFFIX,
     }
@@ -84,7 +98,7 @@ def test__generate_base_runnable_with_cli_player_config(
         return_value=mocker.MagicMock(spec=Runnable[str, str]),
     )
     # execution
-    _generate_base_runnable(player_config.model, player_config.input_output_type)  # noqa
+    _generate_base_runnable(player_config.model, player_config.player_input_interface)  # noqa
     # assert
     create_input_runnable_mock.assert_called_once()
     actual_args, actual_kwargs = create_input_runnable_mock.call_args
@@ -167,10 +181,10 @@ def test_generate_players() -> None:
     n_knights = 2
     n_fortune_tellers = 2
     custom_players = [
-        PlayerConfig(role=ERole.Werewolf, model='cli', input_output_type=EInputOutputType.standard),  # noqa
-        PlayerConfig(role=ERole.Knight, model='cli', input_output_type=EInputOutputType.standard),  # noqa
-        PlayerConfig(role=ERole.FortuneTeller, model='cli', input_output_type=EInputOutputType.standard),  # noqa
-        PlayerConfig(role=ERole.Villager, model='cli', input_output_type=EInputOutputType.standard),  # noqa
+        PlayerConfig(role=ERole.Werewolf, model='cli', player_input_interface=EInputOutputType.standard),  # noqa
+        PlayerConfig(role=ERole.Knight, model='cli', player_input_interface=EInputOutputType.standard),  # noqa
+        PlayerConfig(role=ERole.FortuneTeller, model='cli', player_input_interface=EInputOutputType.standard),  # noqa
+        PlayerConfig(role=ERole.Villager, model='cli', player_input_interface=EInputOutputType.standard),  # noqa
     ]
     actual = generate_players(
         n_players,
