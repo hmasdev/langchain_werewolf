@@ -252,6 +252,7 @@ def _create_echo_runnable_by_system(
     # preprocess formatter
     formatter = formatter or MsgModel.format
     formatter_runnable: Runnable[MsgModel, str]
+    translator_runnable: Runnable[str, str]
     if isinstance(formatter, str):
         formatter_runnable = (
             RunnableLambda(MsgModel.model_dump)
@@ -259,17 +260,18 @@ def _create_echo_runnable_by_system(
         )
     else:
         formatter_runnable = RunnableLambda(formatter)
+    if language == BASE_LANGUAGE:
+        # FIXME: Conditioning by language
+        translator_runnable = RunnablePassthrough()
+    else:
+        translator_runnable = create_translator_runnable(
+            to_language=language,
+            chat_llm=create_chat_model(model, seed=seed),  # noqa
+        )
     formatter_runnable = (
         RunnableParallel(
             orig=RunnablePassthrough(),
-            translated_msg=(
-                RunnableLambda(attrgetter('message'))
-                | create_translator_runnable(
-                    to_language=language,
-                    chat_llm=create_chat_model(model, seed=seed) if language != BASE_LANGUAGE else RunnablePassthrough(),  # noqa
-                    # FIXME: Conditioning by language is not good # noqa
-                )
-            ),
+            translated_msg=RunnableLambda(attrgetter('message')) | translator_runnable,  # noqa
         ).with_types(input_type=MsgModel)
         | RunnableLambda(lambda dic: MsgModel(**(dic['orig'].model_dump() | {'message': dic['translated_msg']})))  # noqa
         | formatter_runnable
