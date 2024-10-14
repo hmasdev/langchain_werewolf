@@ -281,6 +281,7 @@ def test__create_echo_runnable_by_player_whether_invoke_method_calls_formatter_a
     mocker: MockerFixture,
 ) -> None:
     # preparation
+    mocker.patch('langchain_werewolf.setup._generate_base_runnable', mocker.Mock(return_value=RunnableLambda(str)))  # noqa
     output_mock = mocker.Mock()
     player = BaseGamePlayer.instantiate(
         role=ERole.Villager,
