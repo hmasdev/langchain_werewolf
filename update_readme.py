@@ -23,14 +23,14 @@ help: str = subprocess.run(
     text=True,
 ).stdout
 example_configs: list[dict[str, str | int | dict | list]] = [
-    json.load(open(path))  # noqa
+    json.dumps(json.load(open(path)), indent=4)  # noqa
     for path in sorted(glob(os.path.join(EXAMPLES_CONFIG_DIR, '*.json')))
 ]
 
 # render
 print(readme.render(
     help=help,
-    example_configs=example_configs,
+    configs=example_configs,
 ))
 
 with patch(
