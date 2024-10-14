@@ -235,25 +235,28 @@ def test_generate_players_with_invalid_n_xxxxxxs_for_custom_players(
         )
 
 
-def test_generate_players() -> None:
+def test_generate_players(mocker: MockerFixture) -> None:
+    mocker.patch(
+        'langchain_werewolf.setup._generate_base_runnable',
+        mocker.Mock(return_value=RunnableLambda(str).with_types(input_type=str, output_type=str)),  # noqa
+    )
     n_players = 8
     n_werewolves = 2
     n_knights = 2
     n_fortune_tellers = 2
     custom_players = [
-        PlayerConfig(role=ERole.Werewolf, model='cli', player_input_interface=EInputOutputType.standard),  # noqa
-        PlayerConfig(role=ERole.Knight, model='cli', player_input_interface=EInputOutputType.standard),  # noqa
-        PlayerConfig(role=ERole.FortuneTeller, model='cli', player_input_interface=EInputOutputType.standard),  # noqa
-        PlayerConfig(role=ERole.Villager, model='cli', player_input_interface=EInputOutputType.standard),  # noqa
+        PlayerConfig(role=ERole.Werewolf, player_input_interface=EInputOutputType.standard),  # noqa
+        PlayerConfig(role=ERole.Knight, player_input_interface=EInputOutputType.standard),  # noqa
+        PlayerConfig(role=ERole.FortuneTeller, player_input_interface=EInputOutputType.standard),  # noqa
+        PlayerConfig(role=ERole.Villager, player_input_interface=EInputOutputType.standard),  # noqa
     ]
     actual = generate_players(
         n_players,
         n_werewolves,
         n_knights,
         n_fortune_tellers,
-        model='cli',
         seed=0,
-        input_output_type=EInputOutputType.standard,
+        player_input_interface=EInputOutputType.standard,
         custom_players=custom_players,
     )
     assert len(actual) == n_players
@@ -308,9 +311,7 @@ def test__create_echo_runnable_by_player_whether_invoke_method_calls_formatter_a
     # execute
     echo_runnable = _create_echo_runnable_by_player(
         player=player,
-        player_config=None,
         color=None,
-        language=BASE_LANGUAGE,
     )
     echo_runnable.invoke(STATE4TEST)
     # assert
@@ -451,5 +452,4 @@ def test_create_echo_runnable(mocker: MockerFixture) -> None:
         system_output_interface=EInputOutputType.standard,
         system_output_level=ESystemOutputType.all,
         players=players,
-        players_cfg=[PlayerConfig(role=player.role) for player in players],
     )

@@ -8,7 +8,6 @@ from langchain_core.language_models import BaseChatModel
 from langchain_openai import ChatOpenAI
 from pytest_mock import MockerFixture
 from langchain_werewolf.const import (
-    BASE_LANGUAGE,
     DEFAULT_MODEL,
     MODEL_SERVICE_MAP,
 )
@@ -131,16 +130,32 @@ def test_extract_name(
     assert actual == expected
 
 
-def test_create_translator_with_base_language(
+@pytest.mark.parametrize(
+    'to_from_language, inputs_expecteds',
+    [
+        (
+            ELanguage.English,
+            ['Hello', 'Goodbye'],
+        ),
+        (
+            ELanguage.Japanese,
+            ['こんにちは', 'さようなら'],
+        ),
+    ]
+)
+def test_create_translator_with_from_language_same_with_to_language(
+    to_from_language: ELanguage,
+    inputs_expecteds: list[str],
     mocker: MockerFixture,
 ) -> None:
     # preparation
-    inputs = ['Hello', 'Goodbye']
-    expecteds = ['Hello', 'Goodbye']
-    to_language = BASE_LANGUAGE
+    inputs = inputs_expecteds
+    expecteds = inputs_expecteds
+    to_language = to_from_language
+    from_language = to_from_language
     chat_model = mocker.MagicMock(spec=BaseChatModel)
     # execution
-    translator = create_translator_runnable(to_language, chat_model)
+    translator = create_translator_runnable(to_language, chat_model, from_language=from_language)  # noqa
     actuals = translator.batch(inputs)
     # assert
     assert actuals == expecteds

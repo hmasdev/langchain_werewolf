@@ -87,9 +87,9 @@ def generate_players(
     n_knights: int,
     n_fortune_tellers: int,
     custom_players: list[PlayerConfig] = [],
-    model: str | None = None,
+    model: str | None = DEFAULT_MODEL,
     seed: int = -1,
-    input_output_type: EInputOutputType | None = None,
+    player_input_interface: Callable[[str], Any] | EInputOutputType | None = None,  # noqa
     logger: Logger = getLogger(__name__),
 ) -> list[BaseGamePlayer]:
 
@@ -139,6 +139,28 @@ def generate_players(
     ))
     random.shuffle(generated_roles)
 
+    translators = [
+        create_translator_runnable(
+            to_language=player_cfg.language if player_cfg and player_cfg.language else BASE_LANGUAGE,  # noqa
+            chat_llm=_generate_base_runnable(
+                player_cfg.model if hasattr(player_cfg, 'model') else model,  # type: ignore # noqa
+                seed=seed
+            ),
+        )
+        for player_cfg in players_cfg
+    ]
+    inv_translators = [
+        create_translator_runnable(
+            to_language=BASE_LANGUAGE,
+            from_language=player_cfg.language if player_cfg and player_cfg.language else BASE_LANGUAGE,  # noqa
+            chat_llm=_generate_base_runnable(
+                player_cfg.model if hasattr(player_cfg, 'model') else model,  # type: ignore # noqa
+                seed=seed
+            ),
+        )
+        for player_cfg in players_cfg
+    ]
+
     # generate players
     name_generator = consecutive_string_generator(DEFAULT_PLAYER_PREFIX)
     players = [
@@ -147,17 +169,19 @@ def generate_players(
             name=player_cfg.name if player_cfg and player_cfg.name else name_generator.__next__(),  # noqa
             runnable=generate_game_player_runnable(_generate_base_runnable(
                 player_cfg.model if hasattr(player_cfg, 'model') else model,  # type: ignore # noqa
-                player_cfg.player_input_interface if hasattr(player_cfg, 'input_output_type') else input_output_type,  # type: ignore # noqa
+                player_cfg.player_input_interface if hasattr(player_cfg, 'player_input_interface') else player_input_interface,  # type: ignore # noqa
                 seed
             )),
             output=(
-                create_output_runnable(player_cfg.player_output_interface)
+                create_output_runnable(player_cfg.player_output_interface)  # noqa
                 if player_cfg and player_cfg.player_output_interface
                 else None
             ),
             formatter=player_cfg.formatter if player_cfg and player_cfg.formatter else None,  # noqa
+            translator=translator,
+            inv_translator=inv_translator,
         )
-        for player_cfg in players_cfg
+        for player_cfg, translator, inv_translator in zip(players_cfg, translators, inv_translators)  # noqa
     ]
     # Internal Error
     assert len(players) == n_players
@@ -168,12 +192,8 @@ def generate_players(
 def _create_echo_runnable_by_player(
     player: BaseGamePlayer,
     *,
-    player_config: PlayerConfig | None = None,
-    model: str = DEFAULT_MODEL,
     cache: set[str] | None = None,
     color: str | None = None,
-    language: ELanguage = BASE_LANGUAGE,
-    seed: int = -1,
 ) -> Runnable[StateModel, None]:
     cache = cache or set()  # NOTE: if cache is None, cache does not work
     if player.output is None:
@@ -191,17 +211,7 @@ def _create_echo_runnable_by_player(
                         RunnableLambda(attrgetter('value'))
                         | RunnableParallel(
                             orig=RunnablePassthrough(),
-                            translated_msg=(
-                                RunnableLambda(attrgetter('message'))
-                                | create_translator_runnable(
-                                    to_language=language,
-                                    chat_llm=_generate_base_runnable(
-                                        player_config.model if hasattr(player_config, 'model') else model,  # type: ignore # noqa
-                                        player_config.player_input_interface if hasattr(player_config, 'input_output_type') else None,  # type: ignore # noqa
-                                        seed=seed
-                                    ),
-                                )
-                            ),
+                            translated_msg=RunnableLambda(attrgetter('message')) | player.translator,  # noqa
                         )
                         | RunnableLambda(lambda dic: MsgModel(**(dic['orig'].model_dump() | {'message': dic['translated_msg']})))  # noqa
                         | RunnableLambda(
@@ -326,7 +336,6 @@ def create_echo_runnable(
     system_output_interface: Callable[[str], None] | EInputOutputType,
     system_output_level: ESystemOutputType | str,
     players: Iterable[BaseGamePlayer] = tuple(),
-    players_cfg: Iterable[PlayerConfig] = tuple(),
     model: str = DEFAULT_MODEL,
     system_formatter: Callable[[MsgModel], str] | str | None = None,
     system_color: str = CLI_PROMPT_COLOR,
@@ -349,14 +358,10 @@ def create_echo_runnable(
             **{
                 f'{DEFAULT_PLAYER_PREFIX}{i+1}': _create_echo_runnable_by_player(  # noqa
                     player=player,
-                    player_config=cfg,
                     cache=caches[player.name],
                     color=player_colors_[player.name],
-                    model=model,
-                    language=language,
-                    seed=seed,
                 )
-                for i, (player, cfg) in enumerate(zip(players, players_cfg))
+                for i, player in enumerate(players)
             },  # type: ignore
             **{
                 GAME_MASTER_NAME: _create_echo_runnable_by_system(

@@ -1,6 +1,10 @@
 from typing import TypeVar, Iterable, Callable
 
-from langchain_core.runnables import RunnableLambda, Runnable
+from langchain_core.runnables import (
+    Runnable,
+    RunnableLambda,
+    RunnablePassthrough,
+)
 from pydantic import (
     BaseModel,
     Field,
@@ -41,6 +45,9 @@ class BaseGamePlayer(BaseModel, frozen=True):
     runnable: SkipValidation[Runnable[GamePlayerRunnableInputModel, str]] = Field(title="the runnable of the player")  # noqa
     output: SkipValidation[Runnable[str, None] | None] = Field(default=None, title="the output of the player")  # noqa
     formatter: Callable[[MsgModel], str] | str | None = Field(default=None, title="the formatter of the player")  # noqa
+
+    translator: SkipValidation[Runnable[str, str]] = Field(default=RunnablePassthrough(), title="the translator of the player")  # noqa
+    inv_translator: SkipValidation[Runnable[str, str]] = Field(default=RunnablePassthrough(), title="the inv_translator of the player")  # noqa
 
     @field_validator('output')
     @classmethod
