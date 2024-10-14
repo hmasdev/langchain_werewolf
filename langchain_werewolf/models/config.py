@@ -3,6 +3,7 @@ from pydantic import BaseModel, Field
 from ..const import DEFAULT_MODEL, CUSTOM_PLAYER_PREFIX
 from ..enums import (
     EInputOutputType,
+    ELanguage,
     ERole,
     ESpeakerSelectionMethod,
     ESystemOutputType,
@@ -32,6 +33,7 @@ class PlayerConfig(BaseModel, frozen=True):
     name: str = Field(..., title="The name of the player", default_factory=consecutive_string_generator(CUSTOM_PLAYER_PREFIX).__next__)  # noqa
     role: ERole | None = Field(default=None, title="The role of the player")  # noqa
     model: str = Field(default=DEFAULT_MODEL, title=f"The model to use. Default is {DEFAULT_MODEL}.")  # noqa
+    language: ELanguage | None = Field(default=None, title="The language of the player")  # noqa
     player_output_interface: Callable[[str], None] | EInputOutputType | None = Field(default=None, title="The output interface of the player")  # noqa
     player_input_interface: Callable[[str], Any] | EInputOutputType | None = Field(default=None, title="The input interface of the player")  # noqa
     formatter: str | None = Field(default=None, title="The formatter of the player. The format should not include anything other than " + ', '.join('"{'+k+'}"' for k in MsgModel.model_fields.keys()))  # noqa

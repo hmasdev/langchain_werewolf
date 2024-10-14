@@ -135,6 +135,7 @@ def extract_name(
 def create_translator_runnable(
     to_language: ELanguage,
     chat_llm: BaseChatModel | Runnable[str, str],
+    from_language: ELanguage = BASE_LANGUAGE,
     prompt_template: PromptTemplate | str = '''
 You are the best translator in the world.
 Translate the following text into {language}.
@@ -150,15 +151,16 @@ Output only the translated text.
     Args:
         to_language (ELanguage): The target language.
         chat_llm (BaseChatModel | Runnable[str, str]): The chat model or llm-like object.
+        from_language (ELanguage, optional): The source language. Defaults to BASE_LANGUAGE.
         prompt_template (PromptTemplate | str, optional): prompt template for translation. Defaults to ''' You are the best translator in the world. Translate the following text into {{language}}. ---------- {{text}} ---------- Translated the above text into {{language}}. Output only the translated text. '''.
 
     Returns:
         Runnable[str, str]: The translator runnable.
 
     Note:
-        when to_language is {BASE_LANGUAGE}, the chain is a passthrough chain.
+        when from_language == to_language, the chain is a passthrough chain.
     """  # noqa
-    if to_language == BASE_LANGUAGE:
+    if to_language == from_language:
         return RunnablePassthrough().with_types(input_type=str, output_type=str)  # type: ignore # noqa
     if isinstance(prompt_template, str):
         prompt = PromptTemplate(

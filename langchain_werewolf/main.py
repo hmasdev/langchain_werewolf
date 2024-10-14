@@ -104,7 +104,7 @@ def main(
         config_used.general.n_fortune_tellers,  # type: ignore
         model=config_used.general.model,
         seed=config_used.general.seed,  # type: ignore
-        input_output_type=config_used.general.system_input_interface,  # type: ignore # noqa
+        player_input_interface=config_used.general.system_input_interface,  # type: ignore # noqa
         custom_players=config_used.players,
     )
 
@@ -119,7 +119,6 @@ def main(
             config_used.general.system_output_interface,  # type: ignore # noqa,
             config_used.general.system_output_level,  # type: ignore # noqa
             players=players,
-            players_cfg=config_used.players,
             model=config_used.general.model,  # type: ignore
             system_formatter=config_used.general.system_formatter,  # type: ignore # noqa
             seed=config_used.general.seed,  # type: ignore
