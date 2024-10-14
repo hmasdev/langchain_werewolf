@@ -1,3 +1,4 @@
+from typing import Any, Callable
 from pydantic import BaseModel, Field
 from ..const import DEFAULT_MODEL, CUSTOM_PLAYER_PREFIX
 from ..enums import (
@@ -16,11 +17,9 @@ class GeneralConfig(BaseModel, frozen=True):
     n_knights: int | None = Field(default=None, title="The number of knights. Default is None.")  # noqa
     n_fortune_tellers: int | None = Field(default=None, title="The number of fortune tellers. Default is None.")  # noqa
     output: str | None = Field(default=None, title='The output file. Defaults to None.')  # noqa
-    cli_output_level: ESystemOutputType | str | None = Field(
-        default=None,
-        title=f"The output type of the CLI. {list(ESystemOutputType.__members__.keys())} and player names are valid. Default is None.",  # noqa
-    )
-    system_interface: EInputOutputType | None = Field(default=None, title="The system interface. Default is None.")  # noqa
+    system_output_level: ESystemOutputType | str | None = Field(default=None, title=f"The output type of the CLI. {list(ESystemOutputType.__members__.keys())} and player names are valid. Default is None.")  # noqa
+    system_output_interface: Callable[[str], None] | EInputOutputType | None = Field(default=None, title="The system output interface. Default is None.")  # noqa
+    system_input_interface: Callable[[str], Any] | EInputOutputType | None = Field(default=None, title="The system input interface. Default is None.")  # noqa
     system_formatter: str | None = Field(default=None, title="The system formatter. The format should not include anything other than " + ', '.join('"{'+k+'}"' for k in MsgModel.model_fields.keys()))  # noqa
     seed: int | None = Field(default=None, title="The random seed. Defaults to None.")  # noqa
     model: str | None = Field(default=None, title=f"The model to use. Default is None.")  # noqa
@@ -33,7 +32,8 @@ class PlayerConfig(BaseModel, frozen=True):
     name: str = Field(..., title="The name of the player", default_factory=consecutive_string_generator(CUSTOM_PLAYER_PREFIX).__next__)  # noqa
     role: ERole | None = Field(default=None, title="The role of the player")  # noqa
     model: str = Field(default=DEFAULT_MODEL, title=f"The model to use. Default is {DEFAULT_MODEL}.")  # noqa
-    input_output_type: EInputOutputType | None = Field(default=None, title="The input output type of the player")  # noqa
+    player_output_interface: Callable[[str], None] | EInputOutputType | None = Field(default=None, title="The output interface of the player")  # noqa
+    player_input_interface: Callable[[str], Any] | EInputOutputType | None = Field(default=None, title="The input interface of the player")  # noqa
     formatter: str | None = Field(default=None, title="The formatter of the player. The format should not include anything other than " + ', '.join('"{'+k+'}"' for k in MsgModel.model_fields.keys()))  # noqa
 
 

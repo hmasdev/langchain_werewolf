@@ -21,7 +21,7 @@ def test_main_integration() -> None:
         n_knights=1,
         n_fortune_tellers=1,
         output='',
-        cli_output_level=ESystemOutputType.off,
-        system_interface=EInputOutputType.standard,
+        system_output_level=ESystemOutputType.off,
+        system_output_interface=EInputOutputType.standard,
         seed=-1,
     )

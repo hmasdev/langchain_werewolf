@@ -1,5 +1,6 @@
 import logging
 import random
+from typing import Any, Callable
 import click
 from dotenv import load_dotenv
 from langchain.globals import set_verbose, set_debug
@@ -21,8 +22,9 @@ DEFAULT_CONFIG = Config(
         n_knights=1,
         n_fortune_tellers=1,
         output='',
-        cli_output_level=ESystemOutputType.all,
-        system_interface=EInputOutputType.standard,
+        system_output_level=ESystemOutputType.all,
+        system_output_interface=EInputOutputType.standard,
+        system_input_interface=EInputOutputType.standard,
         system_formatter=None,
         seed=-1,
         model='gpt-4o-mini',
@@ -40,8 +42,9 @@ def main(
     n_knights: int = DEFAULT_GENERAL_CONFIG.n_knights,  # type: ignore # noqa
     n_fortune_tellers: int = DEFAULT_GENERAL_CONFIG.n_fortune_tellers,  # type: ignore # noqa
     output: str = DEFAULT_GENERAL_CONFIG.output,  # type: ignore # noqa
-    cli_output_level:  ESystemOutputType | str = DEFAULT_GENERAL_CONFIG.cli_output_level,  # type: ignore # noqa
-    system_interface: EInputOutputType = DEFAULT_GENERAL_CONFIG.system_interface,  # type: ignore # noqa
+    system_output_level:  ESystemOutputType | str = DEFAULT_GENERAL_CONFIG.system_output_level,  # type: ignore # noqa
+    system_output_interface: Callable[[str], None] | EInputOutputType = DEFAULT_GENERAL_CONFIG.system_output_interface,  # type: ignore # noqa
+    system_input_interface: Callable[[str], Any] | EInputOutputType = DEFAULT_GENERAL_CONFIG.system_input_interface,  # type: ignore # noqa
     system_formatter: str | None = DEFAULT_GENERAL_CONFIG.system_formatter,  # type: ignore # noqa
     config: Config | str | None = None,
     seed: int = DEFAULT_GENERAL_CONFIG.seed,  # type: ignore # noqa
@@ -72,8 +75,9 @@ def main(
             n_knights=config.general.n_knights if config.general.n_knights is not None else n_knights,  # noqa
             n_fortune_tellers=config.general.n_fortune_tellers if config.general.n_fortune_tellers is not None else n_fortune_tellers,  # noqa
             output=config.general.output if config.general.output is not None else output,  # noqa
-            cli_output_level=config.general.cli_output_level if config.general.cli_output_level is not None else cli_output_level,  # noqa
-            system_interface=config.general.system_interface if config.general.system_interface is not None else system_interface,  # noqa
+            system_output_level=config.general.system_output_level if config.general.system_output_level is not None else system_output_level,  # noqa
+            system_input_interface=config.general.system_input_interface if config.general.system_input_interface is not None else system_input_interface,  # noqa
+            system_output_interface=config.general.system_output_interface if config.general.system_output_interface is not None else system_output_interface,  # noqa
             system_formatter=config.general.system_formatter if config.general.system_formatter is not None else system_formatter,  # noqa
             seed=config.general.seed if config.general.seed is not None else seed,  # noqa
             model=config.general.model if config.general.model is not None else model,  # noqa
@@ -100,7 +104,7 @@ def main(
         config_used.general.n_fortune_tellers,  # type: ignore
         model=config_used.general.model,
         seed=config_used.general.seed,  # type: ignore
-        input_output_type=config_used.general.system_interface,  # type: ignore # noqa
+        input_output_type=config_used.general.system_input_interface,  # type: ignore # noqa
         custom_players=config_used.players,
     )
 
@@ -112,8 +116,8 @@ def main(
             for k, dic in config_used.game.model_dump().items()
         },
         echo=create_echo_runnable(
-            config_used.general.system_interface,  # type: ignore # noqa,
-            config_used.general.cli_output_level,  # type: ignore # noqa
+            config_used.general.system_output_interface,  # type: ignore # noqa,
+            config_used.general.system_output_level,  # type: ignore # noqa
             players=players,
             players_cfg=config_used.players,
             model=config_used.general.model,  # type: ignore
@@ -142,8 +146,9 @@ def main(
 @click.option('-k', '--n-knights', default=DEFAULT_GENERAL_CONFIG.n_knights, help=f'The number of knights. Default is {DEFAULT_GENERAL_CONFIG.n_knights}.')  # noqa
 @click.option('-f', '--n-fortune-tellers', default=DEFAULT_GENERAL_CONFIG.n_fortune_tellers, help=f'The number of fortune tellers. Default is {DEFAULT_GENERAL_CONFIG.n_fortune_tellers}.')  # noqa
 @click.option('-o', '--output', default=DEFAULT_GENERAL_CONFIG.output, help=f'The output file. Defaults to "{DEFAULT_GENERAL_CONFIG.output}".')  # noqa
-@click.option('-l', '--cli-output-level', default=DEFAULT_GENERAL_CONFIG.cli_output_level.name if isinstance(DEFAULT_GENERAL_CONFIG.cli_output_level, ESystemOutputType) else DEFAULT_GENERAL_CONFIG.cli_output_level, help=f'The output type of the CLI. {list(ESystemOutputType.__members__.keys())} and player names are valid. Default is All.')  # noqa
-@click.option('--system-interface', default=DEFAULT_GENERAL_CONFIG.system_interface.name if isinstance(DEFAULT_GENERAL_CONFIG.system_interface, EInputOutputType) else DEFAULT_GENERAL_CONFIG.system_interface, help=f'The system interface. Default is {DEFAULT_GENERAL_CONFIG.system_interface}.')  # noqa
+@click.option('-l', '--system-output-level', default=DEFAULT_GENERAL_CONFIG.system_output_level.name if isinstance(DEFAULT_GENERAL_CONFIG.system_output_level, ESystemOutputType) else DEFAULT_GENERAL_CONFIG.system_output_level, help=f'The output type of the CLI. {list(ESystemOutputType.__members__.keys())} and player names are valid. Default is All.')  # noqa
+@click.option('--system-output-interface', default=DEFAULT_GENERAL_CONFIG.system_output_interface.name if isinstance(DEFAULT_GENERAL_CONFIG.system_output_interface, EInputOutputType) else DEFAULT_GENERAL_CONFIG.system_output_interface, help=f'The system interface. Default is {DEFAULT_GENERAL_CONFIG.system_output_interface}.')  # noqa
+@click.option('--system-input-interface', default=DEFAULT_GENERAL_CONFIG.system_input_interface.name if isinstance(DEFAULT_GENERAL_CONFIG.system_input_interface, EInputOutputType) else DEFAULT_GENERAL_CONFIG.system_input_interface, help=f'The system interface. Default is {DEFAULT_GENERAL_CONFIG.system_input_interface}.')  # noqa
 @click.option('--system-formatter', default=DEFAULT_GENERAL_CONFIG.system_formatter, help=f'The system formatter. The format should not include anything other than ' + ', '.join('"{'+k+'}"' for k in MsgModel.model_fields.keys()) + '.')  # noqa
 @click.option('-c', '--config', default='', help='The configuration file. Defaults to "". Note that you can specify CLI arguments in this config file but the config file overwrite the CLI arguments.')  # noqa
 @click.option('--seed', default=DEFAULT_GENERAL_CONFIG.seed, help=f'The random seed. Defaults to {DEFAULT_GENERAL_CONFIG.seed}.')  # noqa
@@ -157,8 +162,9 @@ def cli(
     n_knights: int = DEFAULT_GENERAL_CONFIG.n_knights,  # type: ignore # noqa
     n_fortune_tellers: int = DEFAULT_GENERAL_CONFIG.n_fortune_tellers,  # type: ignore # noqa
     output: str = DEFAULT_GENERAL_CONFIG.output,  # type: ignore # noqa
-    cli_output_level:  str = DEFAULT_GENERAL_CONFIG.cli_output_level.name,  # type: ignore # noqa
-    system_interface: str = DEFAULT_GENERAL_CONFIG.system_interface.name,  # type: ignore # noqa
+    system_output_level:  str = DEFAULT_GENERAL_CONFIG.system_output_level.name,  # type: ignore # noqa
+    system_output_interface: str = DEFAULT_GENERAL_CONFIG.system_output_interface.name,  # type: ignore # noqa
+    system_input_interface: str = DEFAULT_GENERAL_CONFIG.system_input_interface.name,  # type: ignore # noqa
     system_formatter: str = DEFAULT_GENERAL_CONFIG.system_formatter,  # type: ignore # noqa
     config: str = '',  # type: ignore # noqa
     seed: int = DEFAULT_GENERAL_CONFIG.seed,  # type: ignore # noqa
@@ -168,20 +174,21 @@ def cli(
     verbose: bool = False,  # type: ignore # noqa
     logger: logging.Logger = logging.getLogger(__name__),  # type: ignore # noqa,
 ):
-    if hasattr(ESystemOutputType, cli_output_level):
-        cli_output_level = ESystemOutputType(cli_output_level)  # type: ignore
-    if hasattr(EInputOutputType, system_interface):
-        system_interface = EInputOutputType(system_interface)  # type: ignore
+    if hasattr(ESystemOutputType, system_output_level):
+        system_output_level = ESystemOutputType(system_output_level)  # type: ignore # noqa
+    if hasattr(EInputOutputType, system_output_interface):
+        system_output_interface = EInputOutputType(system_output_interface)  # type: ignore  # noqa
     else:
-        raise ValueError(f'Invalid system interface: {system_interface}. Valid values are {list(EInputOutputType.__members__.keys())}.')  # noqa
+        raise ValueError(f'Invalid system interface: {system_output_interface}. Valid values are {list(EInputOutputType.__members__.keys())}.')  # noqa
     main(
         n_players=n_players,
         n_werewolves=n_werewolves,
         n_knights=n_knights,
         n_fortune_tellers=n_fortune_tellers,
         output=output,
-        cli_output_level=cli_output_level,
-        system_interface=system_interface,  # type: ignore
+        system_output_level=system_output_level,
+        system_output_interface=system_output_interface,  # type: ignore
+        system_input_interface=EInputOutputType(system_input_interface),
         system_formatter=system_formatter,
         config=config,
         seed=seed,
