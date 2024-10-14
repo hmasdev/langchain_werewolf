@@ -85,11 +85,17 @@ Options:
   -f, --n-fortune-tellers INTEGER
                                   The number of fortune tellers. Default is 1.
   -o, --output TEXT               The output file. Defaults to "".
-  -l, --cli-output-level TEXT     The output type of the CLI. ['all',
+  -l, --system-output-level TEXT  The output type of the CLI. ['all',
                                   'public', 'off'] and player names are valid.
                                   Default is All.
-  --system-interface TEXT         The system interface. Default is
+  --system-output-interface TEXT  The system interface. Default is
                                   EInputOutputType.standard.
+  --system-input-interface TEXT   The system interface. Default is
+                                  EInputOutputType.standard.
+  --system-formatter TEXT         The system formatter. The format should not
+                                  include anything other than "{name}",
+                                  "{timestamp}", "{message}",
+                                  "{participants}", "{template}".
   -c, --config TEXT               The configuration file. Defaults to "". Note
                                   that you can specify CLI arguments in this
                                   config file but the config file overwrite
@@ -100,14 +106,17 @@ Options:
   --debug                         Enable debug mode.
   --verbose                       Enable verbose mode.
   --help                          Show this message and exit.
+
 ```
 
-You can also another options in the configuration json file like the following:
+You can also another options in the configuration json file like the followings:
+
+
 
 ```json
 {
     "general": {
-        "n_players": 4,
+        "n_players": 4
     },
     "game": {
         "daytime_chat_kwargs": {
@@ -117,10 +126,12 @@ You can also another options in the configuration json file like the following:
         "nighttime_chat_kwargs": {
             "n_turns_per_day": 2,
             "select_speaker": "random"
-        },
+        }
     }
 }
 ```
+
+
 
 Then, the configuration file can be specified by `-c` or `--config` option.
 
@@ -143,8 +154,9 @@ Type "help", "copyright", "credits" or "license" for more information.
 >>> load_dotenv()
 True
 >>> from langchain_werewolf.game.main import create_game_graph
+>>> from langchain_werewolf.main import DEFAULT_CONFIG
 >>> from langchain_werewolf.setup import generate_players
->>> players = generate_players(DEFAULT_CONFIG.general.n_players, DEFAULT_CONFIG.general.n_werewolves, DEFAULT_CONFIG.general.n_knights, DEFAULT_CONFIG.general.n_fortune_tellers, DEFAULT_CONFIG.general.seed, DEFAULT_CONFIG.players)
+>>> players = generate_players(DEFAULT_CONFIG.general.n_players, DEFAULT_CONFIG.general.n_werewolves, DEFAULT_CONFIG.general.n_knights, DEFAULT_CONFIG.general.n_fortune_tellers, seed=DEFAULT_CONFIG.general.seed, custom_players=DEFAULT_CONFIG.players)
 >>> graph = create_game_graph(players)
 >>> graph.get_graph(xray=False).draw_png('pics/langchain_werewolf_game_graph_simple.png')
 >>> graph.get_graph(xray=True).draw_png('pics/langchain_werewolf_game_graph.png')
