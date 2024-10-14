@@ -205,7 +205,7 @@ def _create_echo_runnable_by_player(
                         )
                         | RunnableLambda(lambda dic: MsgModel(**(dic['orig'].model_dump() | {'message': dic['translated_msg']})))  # noqa
                         | RunnableLambda(
-                            (lambda m: player.formatter.format(**m.model_dump()))
+                            (lambda m: player.formatter.format(**m.model_dump()))  # noqa
                             if isinstance(player.formatter, str) else
                             (player.formatter or MsgModel.format)
                         )
@@ -223,7 +223,7 @@ def _create_echo_runnable_by_player(
 
 
 def _create_echo_runnable_by_system(
-    output_func: EInputOutputType,
+    output_func: Callable[[str], None] | EInputOutputType,
     level: ESystemOutputType | str,
     *,
     model: str = DEFAULT_MODEL,
