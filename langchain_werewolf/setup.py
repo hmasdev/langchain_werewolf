@@ -204,7 +204,7 @@ def _create_echo_runnable_by_player(
                         | RunnableLambda(lambda dic: MsgModel(**(dic['orig'].model_dump() | {'message': dic['translated_msg']})))  # noqa
                         | create_output_runnable(
                             output_func=player.receive_message,
-                            styler=partial(click.style, fg=color or CLI_PROMPT_COLOR),  # noqa
+                            styler=partial(click.style, fg=color or CLI_PROMPT_COLOR) if color is not None else None,  # noqa
                         )
                     ),
                 )
@@ -290,7 +290,7 @@ def _create_echo_runnable_by_system(
                                         styler=partial(
                                             click.style,
                                             fg=color.get(name) if isinstance(color, dict) else color,  # noqa
-                                        ),
+                                        ) if color is not None else None,
                                     ),
                                 )
                                 for name in player_names
@@ -301,7 +301,7 @@ def _create_echo_runnable_by_system(
                                 styler=partial(
                                     click.style,
                                     fg=color.get(GAME_MASTER_NAME) if isinstance(color, dict) else color,  # noqa
-                                ),
+                                ) if color is not None else None,
                             ),
                         )
                     ),
