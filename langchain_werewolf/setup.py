@@ -197,7 +197,7 @@ def _create_echo_runnable_by_player(
                                     to_language=language,
                                     chat_llm=_generate_base_runnable(
                                         player_config.model if hasattr(player_config, 'model') else model,  # type: ignore # noqa
-                                        player_config.player_output_interface if hasattr(player_config, 'input_output_type') else None,  # type: ignore # noqa
+                                        player_config.player_input_interface if hasattr(player_config, 'input_output_type') else None,  # type: ignore # noqa
                                         seed=seed
                                     ),
                                 )
