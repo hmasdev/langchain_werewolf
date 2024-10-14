@@ -1,0 +1,15 @@
+{
+    "general": {
+        "n_players": 4
+    },
+    "game": {
+        "daytime_chat_kwargs": {
+            "n_turns_per_day": 2,
+            "select_speaker": "round_robin"
+        },
+        "nighttime_chat_kwargs": {
+            "n_turns_per_day": 2,
+            "select_speaker": "random"
+        }
+    }
+}
