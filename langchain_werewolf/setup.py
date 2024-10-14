@@ -204,8 +204,13 @@ def _create_echo_runnable_by_player(
                             ),
                         )
                         | RunnableLambda(lambda dic: MsgModel(**(dic['orig'].model_dump() | {'message': dic['translated_msg']})))  # noqa
+                        | RunnableLambda(
+                            (lambda m: player.formatter.format(**m.model_dump()))
+                            if isinstance(player.formatter, str) else
+                            (player.formatter or MsgModel.format)
+                        )
                         | create_output_runnable(
-                            output_func=player.receive_message,
+                            output_func=player.output.invoke,
                             styler=partial(click.style, fg=color or CLI_PROMPT_COLOR) if color is not None else None,  # noqa
                         )
                     ),
