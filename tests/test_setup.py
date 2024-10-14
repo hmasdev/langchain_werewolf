@@ -75,15 +75,15 @@ STATE4TEST = StateModel(
             ] + [
                 IdentifiedModel[MsgModel](value=MsgModel(
                     name=name,
-                    message=f'Hello, everyone!',
+                    message='Hello, everyone!',
                     participants=frozenset(set(PLAYER_NAMES4TEST) | {GAME_MASTER_NAME}),  # noqa
                 ))
                 for name in PLAYER_NAMES4TEST
             ],
         )
     },
-    alive_players_names=PLAYER_NAMES4TEST,
-    safe_players_names=[],
+    alive_players_names=list(PLAYER_NAMES4TEST),
+    safe_players_names=set(),
     current_speaker=None,
     n_chat_remaining=0,
     daytime_vote_result_history=[],
@@ -280,8 +280,7 @@ def test__create_echo_runnable_by_player_whether_invoke_method_calls_formatter_a
     mocker: MockerFixture,
 ) -> None:
     # preparation
-    player_name: str = PLAYER_NAMES4TEST[0]
-    formatter = MsgModel.format
+    mocker.patch('langchain_werewolf.setup._generate_base_runnable', mocker.Mock(return_value=RunnableLambda(str)))  # noqa
     output_mock = mocker.Mock()
     player = BaseGamePlayer.instantiate(
         role=ERole.Villager,
@@ -291,11 +290,20 @@ def test__create_echo_runnable_by_player_whether_invoke_method_calls_formatter_a
         formatter=formatter,
     )
     expected = sorted([
-        mocker.call(formatter(msg.value))
+        mocker.call(
+            formatter(msg.value)
+            if callable(formatter)
+            else (
+                formatter.format(**msg.value.model_dump())
+                if isinstance(formatter, str)
+                else MsgModel.format(msg.value)
+            )
+        )
         for k, chat_history in STATE4TEST.chat_state.items()
         if player_name in k
         for msg in chat_history.messages
     ], key=lambda msg: msg.timestamp)
+    assert expected  # check not empty
     # execute
     echo_runnable = _create_echo_runnable_by_player(
         player=player,
@@ -311,7 +319,7 @@ def test__create_echo_runnable_by_player_whether_invoke_method_calls_formatter_a
     [
         (level, formatter, expected_messages)
         for level, expected_messages in zip(
-                [
+            [
                 ESystemOutputType.off,
                 ESystemOutputType.all,
                 ESystemOutputType.public,
@@ -328,7 +336,7 @@ def test__create_echo_runnable_by_player_whether_invoke_method_calls_formatter_a
                 sorted([
                     msg.value
                     for k, chat_history in STATE4TEST.chat_state.items()
-                    if k == frozenset({GAME_MASTER_NAME} | set(PLAYER_NAMES4TEST))
+                    if k == frozenset({GAME_MASTER_NAME} | set(PLAYER_NAMES4TEST))  # noqa
                     for msg in chat_history.messages
                 ], key=lambda msg: msg.timestamp),
                 sorted([
@@ -372,7 +380,7 @@ def test__create_echo_runnable_by_system_whether_invoke_method_calls_formatter_a
         # create spy
         formatter_spy = mocker.Mock(side_effect=formatter.format)
         formatter = mocker.Mock(spec=str)
-        formatter.format = formatter_spy
+        formatter.format = formatter_spy  # type: ignore
     elif callable(formatter):
         # create expected
         expected_formatter_calls = [mocker.call(msg) for msg in expected_messages]  # noqa
