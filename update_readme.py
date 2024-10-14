@@ -2,14 +2,12 @@ from glob import glob
 import json
 import os
 import subprocess
-from dotenv import load_dotenv
+from unittest.mock import patch, Mock
 from jinja2 import Environment, FileSystemLoader
+from langchain_core.runnables import RunnablePassthrough
 from langchain_werewolf.main import DEFAULT_CONFIG
 from langchain_werewolf.game.main import create_game_graph
 from langchain_werewolf.setup import generate_players
-
-# load env
-load_dotenv()
 
 # const
 WORKDIR: str = '.'
@@ -35,17 +33,22 @@ print(readme.render(
     example_configs=example_configs,
 ))
 
-# create graphs
-graph = create_game_graph(
-    generate_players(
-        DEFAULT_CONFIG.general.n_players,
-        DEFAULT_CONFIG.general.n_werewolves,
-        DEFAULT_CONFIG.general.n_knights,
-        DEFAULT_CONFIG.general.n_fortune_tellers,
-        custom_players=DEFAULT_CONFIG.players,
-        seed=DEFAULT_CONFIG.general.seed,
-    ),
-)
-# update graphs
-graph.get_graph(xray=False).draw_png('pics/langchain_werewolf_game_graph_simple.png')  # noqa
-graph.get_graph(xray=True).draw_png('pics/langchain_werewolf_game_graph.png')  # noqa
+with patch(
+    'langchain_werewolf.setup._generate_base_runnable',
+    Mock(return_value=RunnablePassthrough().with_types(input_type=str, output_type=str)),  # noqa
+):
+    # TODO: remove patch
+    # create graphs
+    graph = create_game_graph(
+        generate_players(
+            DEFAULT_CONFIG.general.n_players,
+            DEFAULT_CONFIG.general.n_werewolves,
+            DEFAULT_CONFIG.general.n_knights,
+            DEFAULT_CONFIG.general.n_fortune_tellers,
+            custom_players=DEFAULT_CONFIG.players,
+            seed=DEFAULT_CONFIG.general.seed,
+        ),
+    )
+    # update graphs
+    graph.get_graph(xray=False).draw_png('pics/langchain_werewolf_game_graph_simple.png')  # noqa
+    graph.get_graph(xray=True).draw_png('pics/langchain_werewolf_game_graph.png')  # noqa
