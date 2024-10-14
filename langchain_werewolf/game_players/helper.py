@@ -85,7 +85,7 @@ def generate_game_player_runnable(
     ]):
         return _generate_game_player_runnable_based_on_runnable_lambda(chatmodel_or_runnable)  # noqa
     else:
-        raise ValueError('generate must be either a ChatModel or a Runnable[str, str]')  # noqa
+        raise ValueError(f'chatmodel_or_runnable must be either a BaseChatModel or a Runnable[str, str] but {chatmodel_or_runnable}')  # noqa
 
 
 def filter_state_according_to_player(

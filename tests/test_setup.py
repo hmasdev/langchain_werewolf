@@ -235,7 +235,11 @@ def test_generate_players_with_invalid_n_xxxxxxs_for_custom_players(
         )
 
 
-def test_generate_players() -> None:
+def test_generate_players(mocker: MockerFixture) -> None:
+    mocker.patch(
+        'langchain_werewolf.setup._generate_base_runnable',
+        mocker.Mock(return_value=RunnableLambda(str).with_types(input_type=str, output_type=str)),  # noqa
+    )
     n_players = 8
     n_werewolves = 2
     n_knights = 2
