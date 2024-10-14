@@ -1,6 +1,6 @@
 from typing import Any, Callable
 from pydantic import BaseModel, Field
-from ..const import BASE_LANGUAGE, DEFAULT_MODEL, CUSTOM_PLAYER_PREFIX
+from ..const import DEFAULT_MODEL, CUSTOM_PLAYER_PREFIX
 from ..enums import (
     EInputOutputType,
     ELanguage,

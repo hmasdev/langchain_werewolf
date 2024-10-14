@@ -8,7 +8,6 @@ from langchain_core.language_models import BaseChatModel
 from langchain_openai import ChatOpenAI
 from pytest_mock import MockerFixture
 from langchain_werewolf.const import (
-    BASE_LANGUAGE,
     DEFAULT_MODEL,
     MODEL_SERVICE_MAP,
 )

@@ -141,7 +141,7 @@ def generate_players(
 
     translators = [
         create_translator_runnable(
-            to_language=player_cfg.language if player_cfg and player_cfg.language else BASE_LANGUAGE,
+            to_language=player_cfg.language if player_cfg and player_cfg.language else BASE_LANGUAGE,  # noqa
             chat_llm=_generate_base_runnable(
                 player_cfg.model if hasattr(player_cfg, 'model') else model,  # type: ignore # noqa
                 seed=seed
@@ -152,7 +152,7 @@ def generate_players(
     inv_translators = [
         create_translator_runnable(
             to_language=BASE_LANGUAGE,
-            from_language=player_cfg.language if player_cfg and player_cfg.language else BASE_LANGUAGE,
+            from_language=player_cfg.language if player_cfg and player_cfg.language else BASE_LANGUAGE,  # noqa
             chat_llm=_generate_base_runnable(
                 player_cfg.model if hasattr(player_cfg, 'model') else model,  # type: ignore # noqa
                 seed=seed
