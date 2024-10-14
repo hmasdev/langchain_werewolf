@@ -176,6 +176,8 @@ def _create_echo_runnable_by_player(
     seed: int = -1,
 ) -> Runnable[StateModel, None]:
     cache = cache or set()  # NOTE: if cache is None, cache does not work
+    if player.output is None:
+        return RunnableLambda(lambda _: None)
     # create runnable
     return (
         RunnableLambda(lambda state: filter_state_according_to_player(player, state))  # noqa
