@@ -15,7 +15,7 @@ load_dotenv()
 )
 @flaky(max_runs=2, min_passes=1)
 def test_main_integration() -> None:
-    main(
+    state = main(
         n_players=4,
         n_werewolves=1,
         n_knights=1,
@@ -25,3 +25,4 @@ def test_main_integration() -> None:
         system_output_interface=EInputOutputType.standard,
         seed=-1,
     )
+    assert state.result is not None

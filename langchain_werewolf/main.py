@@ -53,7 +53,7 @@ def main(
     debug: bool = False,
     verbose: bool = False,
     logger: logging.Logger = logging.getLogger(__name__),
-):
+) -> StateModel:
     # load config
     if isinstance(config, Config):
         config = config
@@ -131,12 +131,14 @@ def main(
         config={"recursion_limit": config_used.general.recursion_limit},  # type: ignore  # noqa
         debug=config_used.general.debug,
     )
+    state: StateModel = StateModel(**raw_state)  # type: ignore
 
     # save
     if config_used.general.output:
-        state: StateModel = StateModel(**raw_state)  # type: ignore
         with open(config_used.general.output, 'w') as f:  # type: ignore
             f.write(state.model_dump_json(indent=4))
+
+    return state
 
 
 @click.command()
