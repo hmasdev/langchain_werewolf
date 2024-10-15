@@ -2,8 +2,13 @@ import os
 from flaky import flaky
 from dotenv import load_dotenv
 import pytest
-from langchain_werewolf.enums import EInputOutputType, ESystemOutputType
+from langchain_werewolf.enums import (
+    EInputOutputType,
+    ELanguage,
+    ESystemOutputType,
+)
 from langchain_werewolf.main import main
+from langchain_werewolf.models.config import Config, GeneralConfig
 
 load_dotenv()
 
@@ -14,7 +19,41 @@ load_dotenv()
     reason='OPENAI_API_KEY is not set.',
 )
 @flaky(max_runs=2, min_passes=1)
-def test_main_integration() -> None:
+@pytest.mark.parametrize(
+    'config',
+    [
+        Config(
+            general=GeneralConfig(
+                n_players=4,
+                n_werewolves=1,
+                n_knights=1,
+                n_fortune_tellers=1,
+                seed=-1,
+            ),
+        ),
+        Config(
+            general=GeneralConfig(
+                n_players=4,
+                n_werewolves=1,
+                n_knights=1,
+                n_fortune_tellers=1,
+                seed=-1,
+                system_language=ELanguage.Japanese,
+            ),
+        ),
+        Config(
+            general=GeneralConfig(
+                n_players=4,
+                n_werewolves=1,
+                n_knights=1,
+                n_fortune_tellers=1,
+                seed=-1,
+                system_language=ELanguage.German,
+            ),
+        ),
+    ]
+)
+def test_main_integration(config: Config) -> None:
     state = main(
         n_players=4,
         n_werewolves=1,
@@ -24,5 +63,6 @@ def test_main_integration() -> None:
         system_output_level=ESystemOutputType.off,
         system_output_interface=EInputOutputType.standard,
         seed=-1,
+        config=config,
     )
     assert state.result is not None
