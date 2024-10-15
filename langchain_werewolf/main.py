@@ -6,8 +6,8 @@ import click
 from dotenv import load_dotenv
 from langchain.globals import set_verbose, set_debug
 import pydantic
-from .const import CLI_PROMPT_COLOR, CLI_ECHO_COLORS
-from .enums import ESystemOutputType, EInputOutputType
+from .const import BASE_LANGUAGE, CLI_PROMPT_COLOR, CLI_ECHO_COLORS
+from .enums import ESystemOutputType, EInputOutputType, ELanguage
 from .game.main import create_game_graph
 from .models.config import Config,  GeneralConfig
 from .models.state import StateModel, MsgModel
@@ -27,6 +27,7 @@ DEFAULT_CONFIG = Config(
         system_output_level=ESystemOutputType.all,
         system_output_interface=EInputOutputType.standard,
         system_input_interface=EInputOutputType.standard,
+        system_language=BASE_LANGUAGE,
         system_formatter=None,
         system_font_color=CLI_PROMPT_COLOR,
         player_font_colors=cycle(CLI_ECHO_COLORS),
@@ -49,6 +50,7 @@ def main(
     system_output_level:  ESystemOutputType | str = DEFAULT_GENERAL_CONFIG.system_output_level,  # type: ignore # noqa
     system_output_interface: Callable[[str], None] | EInputOutputType = DEFAULT_GENERAL_CONFIG.system_output_interface,  # type: ignore # noqa
     system_input_interface: Callable[[str], Any] | EInputOutputType = DEFAULT_GENERAL_CONFIG.system_input_interface,  # type: ignore # noqa
+    system_language: ELanguage | None = DEFAULT_GENERAL_CONFIG.system_language,  # type: ignore # noqa
     system_formatter: str | None = DEFAULT_GENERAL_CONFIG.system_formatter,  # type: ignore # noqa
     system_font_color: str | None = DEFAULT_GENERAL_CONFIG.system_font_color,  # type: ignore # noqa
     player_font_colors: Iterable[str] | str | None = DEFAULT_GENERAL_CONFIG.player_font_colors,  # type: ignore # noqa
@@ -84,6 +86,7 @@ def main(
             system_output_level=config.general.system_output_level if config.general.system_output_level is not None else system_output_level,  # noqa
             system_input_interface=config.general.system_input_interface if config.general.system_input_interface is not None else system_input_interface,  # noqa
             system_output_interface=config.general.system_output_interface if config.general.system_output_interface is not None else system_output_interface,  # noqa
+            system_language=config.general.system_language if config.general.system_language is not None else system_language,  # noqa
             system_formatter=config.general.system_formatter if config.general.system_formatter is not None else system_formatter,  # noqa
             system_font_color=config.general.system_font_color if config.general.system_font_color is not None else system_font_color,  # noqa
             player_font_colors=config.general.player_font_colors if config.general.player_font_colors is not None else player_font_colors,  # noqa
@@ -132,6 +135,7 @@ def main(
             system_color=config_used.general.system_font_color,  # type: ignore # noqa
             player_colors=config_used.general.player_font_colors,  # type: ignore # noqa
             seed=config_used.general.seed,  # type: ignore
+            language=config_used.general.system_language,  # type: ignore
         ),
     )
 
