@@ -133,10 +133,16 @@ def _create_run_vote_subgraph(
     logger: Logger = getLogger(__name__),
 ) -> Graph:
     # preprocess prompt
-    if not callable(prompt):
-        prompt = (RunnableLambda(GeneratePromptInputForVote.model_dump) | RunnableLambda(prompt.format)).invoke  # noqa
-    if not callable(system_prompt):
-        system_prompt = (RunnableLambda(GenerateSystemPromptInputForVote.model_dump) | RunnableLambda(system_prompt.format)).invoke  # noqa
+    prompt_func: Callable[[GeneratePromptInputForVote], str]
+    if callable(prompt):
+        prompt_func = prompt
+    else:
+        def prompt_func(m): return prompt.format(**m.model_dump())  # noqa
+    system_prompt_func: Callable[[GenerateSystemPromptInputForVote], str]
+    if callable(system_prompt):
+        system_prompt_func = system_prompt
+    else:
+        def system_prompt_func(m): return system_prompt.format(**m.model_dump())  # noqa
     # define the graph
     workflow: Graph = StateGraph(StateModel)
     # define nodes and edges
@@ -148,10 +154,10 @@ def _create_run_vote_subgraph(
             | create_dict_to_record_chat(
                 sender=GAME_MASTER_NAME,
                 participants=[GAME_MASTER_NAME]+[p.name for p in players],
-                message=prompt(GeneratePromptInputForVote(
+                message=prompt_func(GeneratePromptInputForVote(
                     player_role=ERole.Villager,
                     player_side=ESide.Villager,
-                    alive_players_names=[p.name for p in state.alive_players_names],  # noqa
+                    alive_players_names=[p for p in state.alive_players_names],  # noqa
                 )),
             )
         ),
@@ -179,7 +185,7 @@ def _create_run_vote_subgraph(
                 _player_vote,
                 timespan=timespan,
                 player=player,
-                generate_system_prompt=system_prompt,
+                generate_system_prompt=system_prompt_func,
                 chat_model=chat_model,
                 seed=seed,
             ),
