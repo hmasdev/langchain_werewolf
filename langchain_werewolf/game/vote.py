@@ -132,6 +132,11 @@ def _create_run_vote_subgraph(
     echo: Callable[[StateModel], None] | Runnable[StateModel, None] | None = None,  # noqa
     logger: Logger = getLogger(__name__),
 ) -> Graph:
+    # preprocess prompt
+    if not callable(prompt):
+        prompt = (RunnableLambda(GeneratePromptInputForVote.model_dump) | RunnableLambda(prompt.format)).invoke  # noqa
+    if not callable(system_prompt):
+        system_prompt = (RunnableLambda(GenerateSystemPromptInputForVote.model_dump) | RunnableLambda(system_prompt.format)).invoke  # noqa
     # define the graph
     workflow: Graph = StateGraph(StateModel)
     # define nodes and edges
@@ -147,7 +152,7 @@ def _create_run_vote_subgraph(
                     player_role=ERole.Villager,
                     player_side=ESide.Villager,
                     alive_players_names=[p.name for p in state.alive_players_names],  # noqa
-                )) if callable(prompt) else prompt,
+                )),
             )
         ),
     )
@@ -174,7 +179,7 @@ def _create_run_vote_subgraph(
                 _player_vote,
                 timespan=timespan,
                 player=player,
-                generate_system_prompt=system_prompt if callable(system_prompt) else lambda m: system_prompt.format(**m.model_dump()),  # noqa
+                generate_system_prompt=system_prompt,
                 chat_model=chat_model,
                 seed=seed,
             ),
