@@ -1,10 +1,12 @@
+from itertools import cycle
 import logging
 import random
-from typing import Any, Callable
+from typing import Any, Callable, Iterable
 import click
 from dotenv import load_dotenv
 from langchain.globals import set_verbose, set_debug
 import pydantic
+from .const import CLI_PROMPT_COLOR, CLI_ECHO_COLORS
 from .enums import ESystemOutputType, EInputOutputType
 from .game.main import create_game_graph
 from .models.config import Config,  GeneralConfig
@@ -26,6 +28,8 @@ DEFAULT_CONFIG = Config(
         system_output_interface=EInputOutputType.standard,
         system_input_interface=EInputOutputType.standard,
         system_formatter=None,
+        system_font_color=CLI_PROMPT_COLOR,
+        player_font_colors=cycle(CLI_ECHO_COLORS),
         seed=-1,
         model='gpt-4o-mini',
         recursion_limit=1000,
@@ -46,6 +50,8 @@ def main(
     system_output_interface: Callable[[str], None] | EInputOutputType = DEFAULT_GENERAL_CONFIG.system_output_interface,  # type: ignore # noqa
     system_input_interface: Callable[[str], Any] | EInputOutputType = DEFAULT_GENERAL_CONFIG.system_input_interface,  # type: ignore # noqa
     system_formatter: str | None = DEFAULT_GENERAL_CONFIG.system_formatter,  # type: ignore # noqa
+    system_font_color: str | None = DEFAULT_GENERAL_CONFIG.system_font_color,  # type: ignore # noqa
+    player_font_colors: Iterable[str] | str | None = DEFAULT_GENERAL_CONFIG.player_font_colors,  # type: ignore # noqa
     config: Config | str | None = None,
     seed: int = DEFAULT_GENERAL_CONFIG.seed,  # type: ignore # noqa
     model: str = DEFAULT_GENERAL_CONFIG.model,  # type: ignore # noqa
@@ -79,6 +85,8 @@ def main(
             system_input_interface=config.general.system_input_interface if config.general.system_input_interface is not None else system_input_interface,  # noqa
             system_output_interface=config.general.system_output_interface if config.general.system_output_interface is not None else system_output_interface,  # noqa
             system_formatter=config.general.system_formatter if config.general.system_formatter is not None else system_formatter,  # noqa
+            system_font_color=config.general.system_font_color if config.general.system_font_color is not None else system_font_color,  # noqa
+            player_font_colors=config.general.player_font_colors if config.general.player_font_colors is not None else player_font_colors,  # noqa
             seed=config.general.seed if config.general.seed is not None else seed,  # noqa
             model=config.general.model if config.general.model is not None else model,  # noqa
             recursion_limit=config.general.recursion_limit if config.general.recursion_limit is not None else recursion_limit,  # noqa
@@ -121,6 +129,8 @@ def main(
             players=players,
             model=config_used.general.model,  # type: ignore
             system_formatter=config_used.general.system_formatter,  # type: ignore # noqa
+            system_color=config_used.general.system_font_color,  # type: ignore # noqa
+            player_colors=config_used.general.player_font_colors,  # type: ignore # noqa
             seed=config_used.general.seed,  # type: ignore
         ),
     )

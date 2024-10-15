@@ -1,4 +1,4 @@
-from typing import Any, Callable
+from typing import Any, Callable, Iterable
 from pydantic import BaseModel, Field
 from ..const import DEFAULT_MODEL, CUSTOM_PLAYER_PREFIX
 from ..enums import (
@@ -22,6 +22,8 @@ class GeneralConfig(BaseModel, frozen=True):
     system_output_interface: Callable[[str], None] | EInputOutputType | None = Field(default=None, title="The system output interface. Default is None.")  # noqa
     system_input_interface: Callable[[str], Any] | EInputOutputType | None = Field(default=None, title="The system input interface. Default is None.")  # noqa
     system_formatter: str | None = Field(default=None, title="The system formatter. The format should not include anything other than " + ', '.join('"{'+k+'}"' for k in MsgModel.model_fields.keys()))  # noqa
+    system_font_color: str | None = Field(default=None, title="The system font color. Default is None.")  # noqa
+    player_font_colors: Iterable | str | None = Field(default=None, title="The player font colors. Default is None.")  # noqa
     seed: int | None = Field(default=None, title="The random seed. Defaults to None.")  # noqa
     model: str | None = Field(default=None, title=f"The model to use. Default is None.")  # noqa
     recursion_limit: int | None = Field(default=None, title="The recursion limit. Default is None.")  # noqa
