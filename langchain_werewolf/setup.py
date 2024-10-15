@@ -198,6 +198,7 @@ def _create_echo_runnable_by_player(
     cache = cache or set()  # NOTE: if cache is None, cache does not work
     if player.output is None:
         return RunnableLambda(lambda _: None)
+    styler = partial(click.style, fg=color) if color is not None else None
     # create runnable
     return (
         RunnableLambda(lambda state: filter_state_according_to_player(player, state))  # noqa
@@ -221,7 +222,7 @@ def _create_echo_runnable_by_player(
                         )
                         | create_output_runnable(
                             output_func=player.output.invoke,
-                            styler=partial(click.style, fg=color or CLI_PROMPT_COLOR) if color is not None else None,  # noqa
+                            styler=styler,
                         )
                     ),
                 )
@@ -246,6 +247,8 @@ def _create_echo_runnable_by_system(
 ) -> Runnable[StateModel, None]:
     # initialize
     player_names = player_names or []
+    if not isinstance(color, dict):
+        color = {name: color for name in player_names}  # noqa
     cache = cache or set()  # NOTE: if cache is None, cache does not work
     try:
         _system_related_dict: dict[ESystemOutputType | str, str | set[str] | None] = {  # noqa
@@ -256,6 +259,13 @@ def _create_echo_runnable_by_system(
         system_related: str | set[str] | None = _system_related_dict[level]  # noqa
     except KeyError:
         raise ValueError(f'Invalid level: {level}. Valid levels are {list(_system_related_dict.keys())}')  # noqa
+    # create stylers
+    stylers = {
+        name: partial(click.style, fg=color_) if color_ is not None else None
+        for name, color_ in color.items()
+    }
+    if GAME_MASTER_NAME not in stylers:
+        stylers[GAME_MASTER_NAME] = None
     # create runnable
     if system_related is None:
         return RunnableLambda(lambda _: None)
@@ -306,10 +316,7 @@ def _create_echo_runnable_by_system(
                                     formatter_runnable
                                     | create_output_runnable(
                                         output_func=output_func,
-                                        styler=partial(
-                                            click.style,
-                                            fg=color.get(name) if isinstance(color, dict) else color,  # noqa
-                                        ) if color is not None else None,
+                                        styler=stylers[name],
                                     ),
                                 )
                                 for name in player_names
@@ -317,10 +324,7 @@ def _create_echo_runnable_by_system(
                             formatter_runnable
                             | create_output_runnable(
                                 output_func=output_func,
-                                styler=partial(
-                                    click.style,
-                                    fg=color.get(GAME_MASTER_NAME) if isinstance(color, dict) else color,  # noqa
-                                ) if color is not None else None,
+                                styler=stylers[GAME_MASTER_NAME],
                             ),
                         )
                     ),
