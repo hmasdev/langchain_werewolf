@@ -239,7 +239,7 @@ def _create_echo_runnable_by_system(
     model: str = DEFAULT_MODEL,
     player_names: list[str] | None = None,
     cache: set[str] | None = None,
-    color: str | dict[str, str] | None = None,
+    color: str | dict[str, str | None] | None = None,
     language: ELanguage = BASE_LANGUAGE,
     formatter: Callable[[MsgModel], str] | str | None = None,
     seed: int = -1,
@@ -339,7 +339,7 @@ def create_echo_runnable(
     model: str = DEFAULT_MODEL,
     system_formatter: Callable[[MsgModel], str] | str | None = None,
     system_color: str | None = CLI_PROMPT_COLOR,
-    player_colors: Iterable[str] | str | None = cycle(CLI_ECHO_COLORS),
+    player_colors: Iterable[str | None] | str | None = cycle(CLI_ECHO_COLORS),
     language: ELanguage = BASE_LANGUAGE,
     seed: int = -1,
 ) -> Runnable[StateModel, None]:
