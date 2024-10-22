@@ -30,7 +30,7 @@ jobs:
       - name: Check if README.md has changed
         id: check_changes
         run: |
-          if [[ -n $(git status --porcelain README.md pics) ]]; then
+          if [[ -n $(git status --porcelain README.md) ]]; then
             echo "README.md has changed."
             echo "changes_detected=true" >> "$GITHUB_ENV"
           else
