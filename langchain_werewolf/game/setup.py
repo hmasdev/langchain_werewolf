@@ -18,7 +18,7 @@ RULE_ANNOUNCE_NODE_NAME: str = "rule_announcement"  # noqa
 ROLE_ANNOUNCE_NODE_NAME_TEMPLATE: str = "role_announcement_{name}"  # noqa
 
 
-WELCOME_TO_GAME_MESSAGE: str = f'*      WELCOME TO {PACKAGE_NAME} GAME       *'
+WELCOME_TO_GAME_MESSAGE: str = f'      WELCOME TO {PACKAGE_NAME} GAME       '
 
 # GAME_RULE_TEMPLATE is used to explain the game rule.
 GAME_RULE_TEMPLATE: str = '''====== Game Rule ======
@@ -138,11 +138,11 @@ def create_game_preparation_graph(
             sender=GAME_MASTER_NAME,
             participants=[GAME_MASTER_NAME]+[p.name for p in players],
             message='\n'.join([
-                len(WELCOME_TO_GAME_MESSAGE) * '*',
-                '*' + len(WELCOME_TO_GAME_MESSAGE[1:-1]) * ' ' + '*',
-                WELCOME_TO_GAME_MESSAGE,
-                '*' + len(WELCOME_TO_GAME_MESSAGE[1:-1]) * ' ' + '*',
-                len(WELCOME_TO_GAME_MESSAGE) * '*',
+                (len(WELCOME_TO_GAME_MESSAGE) + 2) * '=',
+                '=' + len(WELCOME_TO_GAME_MESSAGE) * ' ' + '=',
+                '=' + WELCOME_TO_GAME_MESSAGE + '=',
+                '=' + len(WELCOME_TO_GAME_MESSAGE) * ' ' + '=',
+                (len(WELCOME_TO_GAME_MESSAGE) + 2) * '=',
             ]),
         ),
     )
