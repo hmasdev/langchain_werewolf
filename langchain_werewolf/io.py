@@ -23,17 +23,15 @@ _output_map: dict[EInputOutputType, Callable[[Any], None]] = {
 def create_input_runnable(
     input_func: Callable[[str], Any] | EInputOutputType = click.prompt,
     styler: Callable[[str], str] | None = None,
-    **kwargs,
 ) -> Runnable[str, str]:
     if isinstance(input_func, EInputOutputType):
         try:
             input_func = _input_map[input_func]
         except KeyError:
             raise ValueError(f'Invalid input_func: {input_func}')
-    kwargs = {k: v for k, v in kwargs.items() if k != 'styler'}
     return (
         (RunnableLambda(styler) if styler else RunnablePassthrough())
-        | RunnableLambda(partial(input_func, **kwargs))
+        | RunnableLambda(input_func)
         | RunnableLambda(str)
     ).with_types(
         input_type=str,
