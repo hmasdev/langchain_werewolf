@@ -18,7 +18,7 @@ RULE_ANNOUNCE_NODE_NAME: str = "rule_announcement"  # noqa
 ROLE_ANNOUNCE_NODE_NAME_TEMPLATE: str = "role_announcement_{name}"  # noqa
 
 
-WELCOME_TO_GAME_MESSAGE: str = f'      WELCOME TO {PACKAGE_NAME} GAME       '
+WELCOME_TO_GAME_MESSAGE: str = f' WELCOME TO {PACKAGE_NAME} GAME '
 
 # GAME_RULE_TEMPLATE is used to explain the game rule.
 GAME_RULE_TEMPLATE: str = '''====== Game Rule ======
@@ -26,7 +26,7 @@ This is a werewolf game.
 There are two teams: villagers and werewolves.
 The villagers win if all werewolves are exclude from the game.
 The werewolves win if they equal or outnumber half of the total number of players.,
-There are 4 roles in this game.
+There are {n_roles} roles in this game.
 
 {roles}
 
@@ -64,21 +64,23 @@ def _announce_game_rule(
     game_rule_template: str,
     role_explanation_template: str,
 ) -> dict[str, dict[frozenset[str], ChatHistoryModel]]:
+    roles_explanation = {
+        role_explanation_template.format(
+            role=player.role.value,
+            side=player.side.value,
+            victory_condition=player.victory_condition,  # noqa
+            night_action=player.night_action,
+        )
+        for player in players
+    }
     return create_dict_to_record_chat(
         sender=GAME_MASTER_NAME,
         participants=[GAME_MASTER_NAME]+[player.name for player in players],
         message=game_rule_template.format(
+            n_roles=len(players),
             roles='\n'.join([
                 f'{idx+1}. {role_exp}'
-                for idx, role_exp in enumerate({
-                    role_explanation_template.format(
-                        role=player.role,
-                        side=player.side,
-                        victory_condition=player.victory_condition,  # noqa
-                        night_action=player.night_action,
-                    )
-                    for player in players
-                })
+                for idx, role_exp in enumerate(roles_explanation)
             ]),
             n_werewolves=len([p for p in players if p.role == ERole.Werewolf]),  # noqa
             n_knights=len([p for p in players if p.role == ERole.Knight]),  # noqa
@@ -96,8 +98,8 @@ def _announce_role(
         sender=GAME_MASTER_NAME,
         participants=[player.name, GAME_MASTER_NAME],
         message=role_announce_template.format(
-            role=player.role,
-            side=player.side,
+            role=player.role.value,
+            side=player.side.value,
             victory_condition=player.victory_condition,
             night_action=player.night_action,
         ),
@@ -139,9 +141,7 @@ def create_game_preparation_graph(
             participants=[GAME_MASTER_NAME]+[p.name for p in players],
             message='\n'.join([
                 (len(WELCOME_TO_GAME_MESSAGE) + 2) * '=',
-                '=' + len(WELCOME_TO_GAME_MESSAGE) * ' ' + '=',
                 '=' + WELCOME_TO_GAME_MESSAGE + '=',
-                '=' + len(WELCOME_TO_GAME_MESSAGE) * ' ' + '=',
                 (len(WELCOME_TO_GAME_MESSAGE) + 2) * '=',
             ]),
         ),

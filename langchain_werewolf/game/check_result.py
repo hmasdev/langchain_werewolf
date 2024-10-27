@@ -21,7 +21,7 @@ RESULT_ANNOUNCE_NODE_NAME: str = 'announce_result'
 REVEAL_ROLES_NODE_NAME: str = 'reveal_roles'
 
 GAME_RESULT_MESSAGE_TEMPLATE: str = 'The game has ended: {result}'
-PLAYER_ROLE_MESSAGE_TEMPLATE: str = '- {name} is {role} (State: {state})'
+PLAYER_ROLE_MESSAGE_TEMPLATE: str = '- The role of {name} is {role} (State: {state})'
 REVEAL_ALL_PLAYER_ROLES_MESSAGE_TEMPLATE: str = '''The roles of the players are as follows:
 {roles}
 '''  # noqa
@@ -79,7 +79,7 @@ def create_check_victory_condition_subgraph(
         lambda state: create_dict_to_record_chat(
             sender=GAME_MASTER_NAME,
             participants=[GAME_MASTER_NAME]+[p.name for p in players],
-            message=GAME_RESULT_MESSAGE_TEMPLATE.format(result=state.result),  # noqa
+            message=GAME_RESULT_MESSAGE_TEMPLATE.format(result=state.result.value),  # noqa
         ),
     )
     workflow.add_node(
@@ -91,7 +91,7 @@ def create_check_victory_condition_subgraph(
                 roles='\n'.join([
                     PLAYER_ROLE_MESSAGE_TEMPLATE.format(
                         name=player.name,
-                        role=player.role,
+                        role=player.role.value,
                         state=(
                             'Alive'
                             if player.name in state.alive_players_names else

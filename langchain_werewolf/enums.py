@@ -33,8 +33,8 @@ class ESide(Enum):
 
 
 class EResult(Enum):
-    VillagersWin: str = 'VillagersWin'
-    WerewolvesWin: str = 'WerewolvesWin'
+    VillagersWin: str = 'Villagers Win'
+    WerewolvesWin: str = 'Werewolves Win'
 
 
 class ESideVictoryCondition(Enum):

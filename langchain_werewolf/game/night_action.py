@@ -55,7 +55,7 @@ def _master_ask_player_to_act_in_night(
         participants=[player.name, GAME_MASTER_NAME],
         message=generate_prompt(
             GeneratePromptInputForNightAction(
-                role=player.role,
+                role=player.role.value,
                 night_action=player.night_action or '',
                 question_to_decide_night_action=player.question_to_decide_night_action or '',  # noqa
                 alive_players_names=state.alive_players_names,
