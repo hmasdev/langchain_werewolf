@@ -1,7 +1,5 @@
-from functools import partial
 from typing import Callable
 from unittest import mock
-import click
 from langchain_core.language_models import BaseChatModel
 from langchain_core.runnables import Runnable, RunnableLambda
 import pytest
@@ -9,8 +7,6 @@ from pytest_mock import MockerFixture
 from langchain_werewolf.const import (
     BASE_LANGUAGE,
     DEFAULT_MODEL,
-    CLI_PROMPT_COLOR,
-    CLI_PROMPT_SUFFIX,
     GAME_MASTER_NAME,
 )
 from langchain_werewolf.enums import (
@@ -19,7 +15,10 @@ from langchain_werewolf.enums import (
     ESystemOutputType,
     ETimeSpan,
 )
-from langchain_werewolf.game_players.base import BaseGamePlayer
+from langchain_werewolf.game_players.base import (
+    BaseGamePlayer,
+    GamePlayerRunnableInputModel,
+)
 from langchain_werewolf.models.config import PlayerConfig
 from langchain_werewolf.models.state import (
     ChatHistoryModel,
@@ -150,8 +149,6 @@ def test__generate_base_runnable_with_cli_player_config(
     expected_args = []  # type: ignore
     expected_kwargs = {
         'input_func': player_config.player_input_interface,
-        'styler': partial(click.style, fg=CLI_PROMPT_COLOR),
-        'prompt_suffix': CLI_PROMPT_SUFFIX,
     }
     create_input_runnable_mock = mocker.patch(
         'langchain_werewolf.setup.create_input_runnable',
@@ -164,19 +161,6 @@ def test__generate_base_runnable_with_cli_player_config(
     actual_args, actual_kwargs = create_input_runnable_mock.call_args
     assert actual_args == tuple(expected_args)
     assert actual_kwargs['input_func'] == expected_kwargs['input_func']
-    assert actual_kwargs['prompt_suffix'] == expected_kwargs['prompt_suffix']
-    assert all([
-        actual_kwargs['styler'].func == expected_kwargs['styler'].func,  # type: ignore # noqa
-        actual_kwargs['styler'].args == expected_kwargs['styler'].args,  # type: ignore # noqa
-        actual_kwargs['styler'].keywords == expected_kwargs['styler'].keywords,  # type: ignore # noqa
-    ])
-    # NOTE: partial object is not equal to another partial object with the same function and arguments  # noqa
-
-
-def test__generate_base_runnable_with_unsupported_config() -> None:
-    # execution
-    with pytest.raises(ValueError):
-        _generate_base_runnable('cli', None)
 
 
 @pytest.mark.parametrize(
@@ -264,6 +248,39 @@ def test_generate_players(mocker: MockerFixture) -> None:
     assert sum([player.role == ERole.Knight for player in actual]) == n_knights  # noqa
     assert sum([player.role == ERole.FortuneTeller for player in actual]) == n_fortune_tellers  # noqa
     assert sum([player.role == ERole.Villager for player in actual]) == n_players - n_werewolves - n_knights - n_fortune_tellers  # noqa
+
+
+def test_generate_players_with_custom_input_interface(mocker: MockerFixture) -> None:  # noqa
+
+    # patch to avoid creating a real chat model
+    mocker.patch('langchain_werewolf.setup.create_chat_model', mocker.Mock(return_value=mocker.Mock(BaseChatModel)))  # noqa
+    # create mocks for the input interfaces of players
+    mocks_input_interface = [mocker.Mock(side_effect=lambda s: s) for _ in range(4)]  # noqa
+
+    n_players = 4
+    n_werewolves = 1
+    n_knights = 0
+    n_fortune_tellers = 0
+    roles = [ERole.Werewolf, ERole.Villager, ERole.Villager, ERole.Villager]
+    custom_players = [
+        PlayerConfig(role=role, model='', player_input_interface=mock, formatter=None)  # noqa
+        for role, mock in zip(roles, mocks_input_interface)
+    ]
+    # execute
+    actual = generate_players(
+        n_players,
+        n_werewolves,
+        n_knights,
+        n_fortune_tellers,
+        seed=0,
+        player_input_interface=None,
+        custom_players=custom_players,
+    )
+    # assert
+    input_for_player_runnable = GamePlayerRunnableInputModel(prompt='test', system_prompt='test2')  # noqa
+    for mock_, player in zip(mocks_input_interface, actual):
+        player.runnable.invoke(input_for_player_runnable)
+        mock_.assert_called_once_with(input_for_player_runnable.prompt)
 
 
 @pytest.mark.parametrize(
