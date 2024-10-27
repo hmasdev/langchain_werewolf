@@ -39,7 +39,7 @@ Werewolves may exclude one player from the game.
 
 
 class GeneratePromptInputForNightAction(BaseModel):
-    role: ERole = Field(..., title="the role of the player")
+    role: str = Field(..., title="the role of the player")
     night_action: str = Field(..., title="the night action of the player")  # noqa
     question_to_decide_night_action: str = Field(..., title="the question to decide the night action of the player")  # noqa
     alive_players_names: list[str] = Field(..., title="the names of the alive players")  # noqa

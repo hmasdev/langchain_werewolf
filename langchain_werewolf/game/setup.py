@@ -77,7 +77,7 @@ def _announce_game_rule(
         sender=GAME_MASTER_NAME,
         participants=[GAME_MASTER_NAME]+[player.name for player in players],
         message=game_rule_template.format(
-            n_roles=len(players),
+            n_roles=len(roles_explanation),
             roles='\n'.join([
                 f'{idx+1}. {role_exp}'
                 for idx, role_exp in enumerate(roles_explanation)
