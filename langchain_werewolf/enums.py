@@ -43,7 +43,6 @@ class ESideVictoryCondition(Enum):
 
 
 class EChatService(Enum):
-    CLI: str = 'cli'
     OpenAI: str = 'openai'
     Google: str = 'google'
     Groq: str = 'groq'

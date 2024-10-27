@@ -37,7 +37,6 @@ CUSTOM_PLAYER_PREFIX: str = 'CustomPlayer'
 # llm
 DEFAULT_MODEL: str = 'gpt-4o-mini'
 MODEL_SERVICE_MAP: dict[str, EChatService] = {
-    'cli': EChatService.CLI,
     'gpt-3.5-turbo': EChatService.OpenAI,
     'gpt-4': EChatService.OpenAI,
     'gpt-4-turbo': EChatService.OpenAI,
