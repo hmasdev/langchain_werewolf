@@ -24,12 +24,13 @@ def test__announce_game_rule() -> None:
     names = frozenset([GAME_MASTER_NAME]+[player.name for player in players])
     state = StateModel(alive_players_names=[player.name for player in players])  # noqa
     expected_message = GAME_RULE_TEMPLATE.format(
+        n_roles=len({p.role for p in players}),
         roles='\n'.join([
             f'{idx+1}. {role_exp}'
             for idx, role_exp in enumerate({
                 ROLE_EXPLANATION_TEMPLATE.format(
-                    role=player.role,
-                    side=player.side,
+                    role=player.role.value,
+                    side=player.side.value,
                     victory_condition=player.victory_condition,
                     night_action=player.night_action,
                 )
@@ -64,8 +65,8 @@ def test__announce_role(player: BaseGamePlayer) -> None:
     # preparation
     state = StateModel(alive_players_names=[player.name])
     expected_message = ROLE_ANNOUNCE_TEMPLATE.format(
-        role=player.role,
-        side=player.side,
+        role=player.role.value,
+        side=player.side.value,
         victory_condition=player.victory_condition,
         night_action=player.night_action,
     )

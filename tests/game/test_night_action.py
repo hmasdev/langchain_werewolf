@@ -36,7 +36,7 @@ def test__master_ask_player_to_act_in_night() -> None:
     assert actual['chat_state'][frozenset([player.name, GAME_MASTER_NAME])]
     assert actual['chat_state'][frozenset([player.name, GAME_MASTER_NAME])].messages  # noqa
     assert actual['chat_state'][frozenset([player.name, GAME_MASTER_NAME])].messages[0].value.name == GAME_MASTER_NAME  # noqa
-    assert actual['chat_state'][frozenset([player.name, GAME_MASTER_NAME])].messages[0].value.message == generate_prompt(GeneratePromptInputForNightAction(role=player.role, night_action=player.night_action, question_to_decide_night_action=player.question_to_decide_night_action, alive_players_names=state.alive_players_names))  # type: ignore # noqa
+    assert actual['chat_state'][frozenset([player.name, GAME_MASTER_NAME])].messages[0].value.message == generate_prompt(GeneratePromptInputForNightAction(role=player.role.value, night_action=player.night_action, question_to_decide_night_action=player.question_to_decide_night_action, alive_players_names=state.alive_players_names))  # type: ignore # noqa
     assert actual['chat_state'][frozenset([player.name, GAME_MASTER_NAME])].messages[0].value.participants == frozenset([player.name, GAME_MASTER_NAME])  # noqa
 
 
