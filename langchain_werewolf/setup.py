@@ -17,7 +17,6 @@ from langchain_core.runnables import (
 from .const import (
     BASE_LANGUAGE,
     CLI_PROMPT_COLOR,
-    CLI_PROMPT_SUFFIX,
     CLI_ECHO_COLORS,
     DEFAULT_MODEL,
     DEFAULT_PLAYER_PREFIX,
@@ -49,13 +48,30 @@ def _generate_base_runnable(
     model: str | None,
     input_func: Callable[[str], Any] | EInputOutputType | None = None,
     seed: int | None = None,
+    *,
+    logger: Logger = getLogger(__name__),
 ) -> BaseChatModel | Runnable[str, str]:
-    if model is None:
-        return create_chat_model(
-            DEFAULT_MODEL,
-            seed=seed if seed is not None and seed >= 0 else None,
-        )
-    elif (
+    """Generate a BaseChatModel instance or a Runnable instance.
+
+    Args:
+        model (str | None): model string
+        input_func (Callable[[str], Any] | EInputOutputType | None, optional): input function. Defaults to None.
+        seed (int | None, optional): random seed. Defaults to None.
+        logger (Logger, optional): logger. Defaults to getLogger(__name__).
+
+    Raises:
+        ValueError: model not in MODEL_SERVICE_MAP, input_func is None and model is not None
+
+    Returns:
+        BaseChatModel | Runnable[str, str]: runnable instance for generate a string
+
+    NOTE:
+        priority:
+            1. models in MODEL_SERVICE_MAP
+            2. input_func is not None
+            3. DEFAULT_MODEL
+    """  # noqa
+    if (
         model in MODEL_SERVICE_MAP
         and MODEL_SERVICE_MAP[model] in {
             EChatService.OpenAI,
@@ -67,18 +83,15 @@ def _generate_base_runnable(
             model,
             seed=seed if seed is not None and seed >= 0 else None,
         )
-    elif (
-        model in MODEL_SERVICE_MAP
-        and MODEL_SERVICE_MAP[model] == EChatService.CLI
-        and input_func is not None
-    ):
-        return create_input_runnable(
-            input_func=input_func,
-            styler=partial(click.style, fg=CLI_PROMPT_COLOR),
-            prompt_suffix=CLI_PROMPT_SUFFIX,
-        )
+    elif input_func is not None:
+        return create_input_runnable(input_func=input_func)
     else:
-        raise ValueError(f'Unsupported: model={model}, input_func={input_func}')  # noqa
+        if model is not None:
+            logger.warning(f'Invalid a pair of model={model} and input_func={input_func}. So use a chat model with {DEFAULT_MODEL}')  # noqa
+        return create_chat_model(
+            DEFAULT_MODEL,
+            seed=seed if seed is not None and seed >= 0 else None,
+        )
 
 
 def generate_players(
