@@ -393,7 +393,7 @@ def create_echo_runnable(
                     language=language,
                     formatter=system_formatter,
                     seed=seed,
-                ) if system_output_interface else RunnableLambda(lambda _: None),
+                ) if system_output_interface else RunnableLambda(lambda _: None),  # noqa
             },  # type: ignore
         )
         | RunnableLambda(lambda _: None)
