@@ -60,6 +60,7 @@ However, {alive_players_names} are alive in the game.
 '''  # noqa
 
 ASK_TO_PLAYER_TO_SPEAK_PROMPT_TEMPLATE: str = '''
+Now it's {name}'s turn to speak up.
 Generate a message which {name} will say. Output only the result.
 You have enough time to think about what to say and say it.
 Take a breath and think step by step to make a logical and clear statement.

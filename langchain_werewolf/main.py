@@ -127,7 +127,7 @@ def main(
             for k, dic in config_used.game.model_dump().items()
         },
         echo=create_echo_runnable(
-            config_used.general.system_output_interface,  # type: ignore # noqa,
+            config_used.general.system_output_interface,  # noqa
             config_used.general.system_output_level,  # type: ignore # noqa
             players=players,
             model=config_used.general.model,  # type: ignore

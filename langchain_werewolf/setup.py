@@ -350,7 +350,7 @@ def _create_echo_runnable_by_system(
 
 
 def create_echo_runnable(
-    system_output_interface: Callable[[str], None] | EInputOutputType,
+    system_output_interface: Callable[[str], None] | EInputOutputType | None,
     system_output_level: ESystemOutputType | str,
     players: Iterable[BaseGamePlayer] = tuple(),
     model: str = DEFAULT_MODEL,
@@ -393,7 +393,7 @@ def create_echo_runnable(
                     language=language,
                     formatter=system_formatter,
                     seed=seed,
-                ),
+                ) if system_output_interface else RunnableLambda(lambda _: None),
             },  # type: ignore
         )
         | RunnableLambda(lambda _: None)
