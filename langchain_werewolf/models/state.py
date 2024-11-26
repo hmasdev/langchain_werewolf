@@ -20,11 +20,11 @@ class MsgModel(BaseModel):
     name: str \
         = Field(..., title="the name of the player")
     timestamp: datetime \
-        = Field(..., title="Timestamp", default_factory=datetime.now)
+        = Field(title="Timestamp", default_factory=datetime.now)
     message: str \
         = Field(..., title="Message")
     participants: frozenset[str] \
-        = Field(..., title="the names of the participants", default_factory=frozenset)  # noqa
+        = Field(title="the names of the participants", default_factory=frozenset)  # noqa
     template: str \
         = Field(
             default='\n'.join([
@@ -60,7 +60,7 @@ class ChatHistoryModel(PartialFrozenModel):
     names: frozenset[str]\
         = Field(..., title="the names of the chat participants")
     messages: list[IdentifiedModel[MsgModel]]\
-        = Field(..., title="Chat Messages", default_factory=list)
+        = Field(title="Chat Messages", default_factory=list)
 
     @field_serializer('names')
     def serialize_names(self, value: frozenset[str]) -> list[str]:
@@ -124,13 +124,13 @@ class StateModel(PartialFrozenModel):
     chat_state: Annotated[
         dict[frozenset[str], ChatHistoryModel],
         _reduce_chat_state,
-    ] = Field(..., title="the chat state", default_factory=dict)  # noqa
+    ] = Field(title="the chat state", default_factory=dict)  # noqa
 
     # players information
     alive_players_names: Annotated[list[str], overwrite_reducer]\
         = Field(..., title="the names of the alive players")
     safe_players_names: Annotated[set[str], overwrite_reducer]\
-        = Field(..., title="the names of the safe players", default_factory=set)  # noqa
+        = Field(title="the names of the safe players", default_factory=set)  # noqa
 
     # game chat information
     current_speaker: Annotated[str | None, overwrite_reducer]\
@@ -141,13 +141,13 @@ class StateModel(PartialFrozenModel):
     # vote information
     # TODO: modify the type of daytime_votes_history and nighttime_votes_history: dict to dict[str, str]  # noqa
     daytime_vote_result_history: Annotated[list[IdentifiedModel[str | None]], reduce_list]\
-        = Field(..., title="the history of the daytime vote results", default_factory=list)  # noqa
+        = Field(title="the history of the daytime vote results", default_factory=list)  # noqa
     daytime_votes_history: Annotated[list[IdentifiedModel[dict]], reduce_list]\
-        = Field(..., title="the votes of each daytime discussion", default_factory=list)  # noqa
+        = Field(title="the votes of each daytime discussion", default_factory=list)  # noqa
     nighttime_vote_result_history: Annotated[list[IdentifiedModel[str | None]], reduce_list]\
-        = Field(..., title="the history of the nighttime vote results", default_factory=list)  # noqa
+        = Field(title="the history of the nighttime vote results", default_factory=list)  # noqa
     nighttime_votes_history: Annotated[list[IdentifiedModel[dict]], reduce_list]\
-        = Field(..., title="the votes of each nighttime discussion", default_factory=list)  # noqa
+        = Field(title="the votes of each nighttime discussion", default_factory=list)  # noqa
     daytime_votes_current: Annotated[dict[str, str], _reduce_votes_current]\
         = Field(default_factory=dict, title="the current daytime votes")
     nighttime_votes_current: Annotated[dict[str, str], _reduce_votes_current]\

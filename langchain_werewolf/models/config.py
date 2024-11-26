@@ -33,7 +33,7 @@ class GeneralConfig(BaseModel, frozen=True):
 
 
 class PlayerConfig(BaseModel, frozen=True):
-    name: str = Field(..., title="The name of the player", default_factory=consecutive_string_generator(CUSTOM_PLAYER_PREFIX).__next__)  # noqa
+    name: str = Field(title="The name of the player", default_factory=consecutive_string_generator(CUSTOM_PLAYER_PREFIX).__next__)  # noqa
     role: ERole | None = Field(default=None, title="The role of the player")  # noqa
     model: str = Field(default=DEFAULT_MODEL, title=f"The model to use. Default is {DEFAULT_MODEL}.")  # noqa
     language: ELanguage | None = Field(default=None, title="The language of the player")  # noqa
