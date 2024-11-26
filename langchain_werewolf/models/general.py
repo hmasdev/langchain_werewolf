@@ -37,8 +37,8 @@ class IdentifiedModel(PartialFrozenModel, Generic[T]):
     # FIXME: frozen_fields should be merged with the parent class's frozen_fields  # noqa
     frozen_fields: Annotated[set[str], constant_reducer] = {'frozen_fields', 'id'}  # noqa
 
-    id: str = Field(..., title="object id", default_factory=_generate_unique_string)  # noqa
-    value: T = Field(..., title="the value of the model")
+    id: str = Field(title="object id", default_factory=_generate_unique_string)  # noqa
+    value: T = Field(title="the value of the model")
 
 
 def reduce_dict(
