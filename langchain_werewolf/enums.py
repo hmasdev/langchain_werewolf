@@ -2,63 +2,63 @@ from enum import Enum
 
 
 class ELanguage(Enum):
-    English: str = 'English'
-    Chinese: str = 'Chinese'
-    Japanese: str = 'Japanese'
-    Korean: str = 'Korean'
-    French: str = 'French'
-    German: str = 'German'
-    Spanish: str = 'Spanish'
-    Italian: str = 'Italian'
-    Dutch: str = 'Dutch'
-    Portuguese: str = 'Portuguese'
-    Russian: str = 'Russian'
+    English = 'English'
+    Chinese = 'Chinese'
+    Japanese = 'Japanese'
+    Korean = 'Korean'
+    French = 'French'
+    German = 'German'
+    Spanish = 'Spanish'
+    Italian = 'Italian'
+    Dutch = 'Dutch'
+    Portuguese = 'Portuguese'
+    Russian = 'Russian'
 
 
 class ESpeakerSelectionMethod(Enum):
-    round_robin: str = 'round_robin'
-    random: str = 'random'
+    round_robin = 'round_robin'
+    random = 'random'
 
 
 class ERole(Enum):
-    Villager: str = 'Villager'
-    Werewolf: str = 'Werewolf'
-    Knight: str = 'Knight'
-    FortuneTeller: str = 'FortuneTeller'
+    Villager = 'Villager'
+    Werewolf = 'Werewolf'
+    Knight = 'Knight'
+    FortuneTeller = 'FortuneTeller'
 
 
 class ESide(Enum):
-    Villager: str = 'Villager'
-    Werewolf: str = 'Werewolf'
+    Villager = 'Villager'
+    Werewolf = 'Werewolf'
 
 
 class EResult(Enum):
-    VillagersWin: str = 'Villagers Win'
-    WerewolvesWin: str = 'Werewolves Win'
+    VillagersWin = 'Villagers Win'
+    WerewolvesWin = 'Werewolves Win'
 
 
 class ESideVictoryCondition(Enum):
-    VillagersWinCondition: str = 'All werewolves are excluded from the game'
-    WerewolvesWinCondition: str = 'The number of alive werewolves equal or outnumber half of the total number of players'  # noqa
+    VillagersWinCondition = 'All werewolves are excluded from the game'
+    WerewolvesWinCondition = 'The number of alive werewolves equal or outnumber half of the total number of players'  # noqa
 
 
 class EChatService(Enum):
-    OpenAI: str = 'openai'
-    Google: str = 'google'
-    Groq: str = 'groq'
+    OpenAI = 'openai'
+    Google = 'google'
+    Groq = 'groq'
 
 
 class ESystemOutputType(Enum):
-    all: str = 'all'
-    public: str = 'public'
-    off: str = 'off'
+    all = 'all'
+    public = 'public'
+    off = 'off'
 
 
 class EInputOutputType(Enum):
-    standard: str = 'standard'
-    click: str = 'click'
+    standard = 'standard'
+    click = 'click'
 
 
 class ETimeSpan(Enum):
-    day: str = 'day'
-    night: str = 'night'
+    day = 'day'
+    night = 'night'
