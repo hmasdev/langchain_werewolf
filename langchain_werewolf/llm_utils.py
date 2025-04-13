@@ -8,6 +8,7 @@ from langchain.output_parsers import (
 )
 
 from langchain.output_parsers.retry import NAIVE_RETRY_WITH_ERROR_PROMPT
+from langchain_core.exceptions import OutputParserException
 from langchain_core.prompts import PromptTemplate
 from langchain_core.prompt_values import StringPromptValue
 from langchain_core.runnables import (
@@ -32,12 +33,14 @@ _service2cls: dict[EChatService, type[BaseChatModel]] = {
     EChatService.Groq: ChatGroq,
 }
 
+_logger: Logger = getLogger(__name__)
+
 
 @lru_cache(maxsize=None)
 def create_chat_model(
     llm: BaseChatModel | str | None = DEFAULT_MODEL,
     seed: int | None = None,
-    logger: Logger = getLogger(__name__),
+    logger: Logger = _logger,
     **kwargs,
 ) -> BaseChatModel:
     """Create a ChatModel instance.
@@ -80,6 +83,7 @@ def extract_name(
     chat_model: BaseChatModel | Runnable[str, str] | str | None = None,
     seed: int | None = None,
     max_retry: int = 5,
+    logger: Logger = _logger,
 ) -> str:
     """Extract a valid name from the message.
 
@@ -90,6 +94,7 @@ def extract_name(
         chat_model (BaseChatModel | Runnable[str, str] | str | None, optional): The chat model. Defaults to None.
         seed (int | None, optional): The random seed. Defaults to None.
         max_retry (int, optional): The maximum number of retries. Defaults to 5.
+        logger (Logger, optional): The logger. Defaults to getLogger(__name__).
 
     Returns:
         str: _description_
@@ -126,10 +131,15 @@ def extract_name(
         'Extract the valid name from the above message.',
     ])
 
-    return chain.parse_with_prompt(  # type: ignore
-        completion=prompt,
-        prompt_value=StringPromptValue(text=message),
-    ).value  # type: ignore
+    try:
+        return chain.parse_with_prompt(  # type: ignore
+            completion=prompt,
+            prompt_value=StringPromptValue(text=message),
+        ).value  # type: ignore
+    except OutputParserException as e:
+        logger.warning("Failed to extract name. See debug logs for details.")
+        logger.debug(f"Error parsing output: {e}", exc_info=True)
+        return ""
 
 
 def create_translator_runnable(
@@ -145,6 +155,7 @@ Translate the following text into {language}.
 Translated the above text into {language}.
 Output only the translated text.
 ''',
+    logger: Logger = _logger,
 ) -> Runnable[str, str]:
     f"""Create a translator runnable.
 
@@ -153,6 +164,7 @@ Output only the translated text.
         chat_llm (BaseChatModel | Runnable[str, str]): The chat model or llm-like object.
         from_language (ELanguage, optional): The source language. Defaults to BASE_LANGUAGE.
         prompt_template (PromptTemplate | str, optional): prompt template for translation. Defaults to ''' You are the best translator in the world. Translate the following text into {{language}}. ---------- {{text}} ---------- Translated the above text into {{language}}. Output only the translated text. '''.
+        logger (Logger, optional): Logger. Defaults to getLogger(__name__).
 
     Returns:
         Runnable[str, str]: The translator runnable.
