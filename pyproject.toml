@@ -1,6 +1,6 @@
 [project]
 name = "langchain_werewolf"
-version = "0.0.0a0"
+version = "0.0.1a0"
 description = "A CUI-based simple werewolf game with `langchain` and `langgraph`"
 requires-python = ">=3.10"
 dependencies = [
