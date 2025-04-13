@@ -101,7 +101,7 @@ def main(
     )
 
     # setup
-    load_dotenv()
+    load_dotenv(override=True)
     set_verbose(config_used.general.verbose)  # type: ignore
     set_debug(config_used.general.debug)  # type: ignore
     if config_used.general.seed >= 0:    # type: ignore
