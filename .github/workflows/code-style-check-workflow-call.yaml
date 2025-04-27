@@ -17,6 +17,8 @@ on:
 jobs:
   run-flake8:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     strategy:
       matrix:
         python-version: ["3.10", "3.11", "3.12"]
