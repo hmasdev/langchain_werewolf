@@ -63,41 +63,41 @@ def main(
     logger: logging.Logger = logging.getLogger(__name__),
 ) -> StateModel:
     # load config
-    if isinstance(config, Config):
-        config = config
-    elif isinstance(config, str):
+    if isinstance(config, str) and config != '':
         try:
-            config = load_json(Config, config) if config else DEFAULT_CONFIG  # noqa
-        except (pydantic.ValidationError, FileNotFoundError):
-            logger.warning(f'Failed to load config: {config}')
-            config = DEFAULT_CONFIG
-    else:
-        config = DEFAULT_CONFIG
+            logger.info(f"Load config from a file: {config}.")
+            config = load_json(Config, config)
+        except (pydantic.ValidationError, FileNotFoundError) as e:
+            raise Exception(f'Failed to load config from a file: {config}. Check the file existence and its format.') from e  # noqa
+    elif config == "":
+        config = None
+    if not isinstance(config, Config) and config is not None:
+        raise ValueError(f'Invalid config type: {type(config)}. Expected Config.')  # noqa
 
     # override config
-    # NOTE: 'config' is prioritized over CLI arguments
+    # NOTE: Priority order: config > CLI arguments > DEFAULT_CONFIG
     config_used = Config(
         general=GeneralConfig(
-            n_players=config.general.n_players if config.general.n_players is not None else n_players,  # noqa
-            n_werewolves=config.general.n_werewolves if config.general.n_werewolves is not None else n_werewolves,  # noqa
-            n_knights=config.general.n_knights if config.general.n_knights is not None else n_knights,  # noqa
-            n_fortune_tellers=config.general.n_fortune_tellers if config.general.n_fortune_tellers is not None else n_fortune_tellers,  # noqa
-            output=config.general.output if config.general.output is not None else output,  # noqa
-            system_output_level=config.general.system_output_level if config.general.system_output_level is not None else system_output_level,  # noqa
-            system_input_interface=config.general.system_input_interface if config.general.system_input_interface is not None else system_input_interface,  # noqa
-            system_output_interface=config.general.system_output_interface if config.general.system_output_interface is not None else system_output_interface,  # noqa
-            system_language=config.general.system_language if config.general.system_language is not None else system_language,  # noqa
-            system_formatter=config.general.system_formatter if config.general.system_formatter is not None else system_formatter,  # noqa
-            system_font_color=config.general.system_font_color if config.general.system_font_color is not None else system_font_color,  # noqa
-            player_font_colors=config.general.player_font_colors if config.general.player_font_colors is not None else player_font_colors,  # noqa
-            seed=config.general.seed if config.general.seed is not None else seed,  # noqa
-            model=config.general.model if config.general.model is not None else model,  # noqa
-            recursion_limit=config.general.recursion_limit if config.general.recursion_limit is not None else recursion_limit,  # noqa
-            debug=config.general.debug if config.general.debug is not None else debug,  # noqa
-            verbose=config.general.verbose if config.general.verbose is not None else verbose,  # noqa
+            n_players=config.general.n_players if (config is not None and config.general.n_players is not None) else n_players,  # noqa
+            n_werewolves=config.general.n_werewolves if (config is not None and config.general.n_werewolves is not None) else n_werewolves,  # noqa
+            n_knights=config.general.n_knights if (config is not None and config.general.n_knights is not None) else n_knights,  # noqa
+            n_fortune_tellers=config.general.n_fortune_tellers if (config is not None and config.general.n_fortune_tellers is not None) else n_fortune_tellers,  # noqa
+            output=config.general.output if (config is not None and config.general.output is not None) else output,  # noqa
+            system_output_level=config.general.system_output_level if (config is not None and config.general.system_output_level is not None) else system_output_level,  # noqa
+            system_input_interface=config.general.system_input_interface if (config is not None and config.general.system_input_interface is not None) else system_input_interface,  # noqa
+            system_output_interface=config.general.system_output_interface if (config is not None and config.general.system_output_interface is not None) else system_output_interface,  # noqa
+            system_language=config.general.system_language if (config is not None and config.general.system_language is not None) else system_language,  # noqa
+            system_formatter=config.general.system_formatter if (config is not None and config.general.system_formatter is not None) else system_formatter,  # noqa
+            system_font_color=config.general.system_font_color if (config is not None and config.general.system_font_color is not None) else system_font_color,  # noqa
+            player_font_colors=config.general.player_font_colors if (config is not None and config.general.player_font_colors is not None) else player_font_colors,  # noqa
+            seed=config.general.seed if (config is not None and config.general.seed is not None) else seed,  # noqa
+            model=config.general.model if (config is not None and config.general.model is not None) else model,  # noqa
+            recursion_limit=config.general.recursion_limit if (config is not None and config.general.recursion_limit is not None) else recursion_limit,  # noqa
+            debug=config.general.debug if (config is not None and config.general.debug is not None) else debug,  # noqa
+            verbose=config.general.verbose if (config is not None and config.general.verbose is not None) else verbose,  # noqa
         ),
-        players=config.players,
-        game=config.game,
+        players=config.players if (config is not None and config.players is not None) else DEFAULT_CONFIG.players,  # noqa
+        game=config.game if (config is not None and config.game is not None) else DEFAULT_CONFIG.game,  # noqa
     )
 
     # setup
