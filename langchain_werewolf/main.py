@@ -71,6 +71,8 @@ def main(
             raise Exception(f'Failed to load config: {config}. Check the file existence and its format.') from e  # noqa
     elif config == "":
         config = None
+    if not isinstance(config, Config) and config is not None:
+        raise ValueError(f'Invalid config type: {type(config)}. Expected Config.')  # noqa
 
     # override config
     # NOTE: Priority order: config > CLI arguments > DEFAULT_CONFIG
