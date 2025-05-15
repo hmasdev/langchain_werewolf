@@ -65,10 +65,10 @@ def main(
     # load config
     if isinstance(config, str) and config != '':
         try:
+            logger.info(f"Load config from a file: {config}.")
             config = load_json(Config, config)
-            logger.info(f"Loaded config from {config}")
         except (pydantic.ValidationError, FileNotFoundError) as e:
-            raise Exception(f'Failed to load config: {config}. Check the file existence and its format.') from e  # noqa
+            raise Exception(f'Failed to load config from a file: {config}. Check the file existence and its format.') from e  # noqa
     elif config == "":
         config = None
     if not isinstance(config, Config) and config is not None:
