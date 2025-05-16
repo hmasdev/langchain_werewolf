@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field
 
 from ..const import GAME_MASTER_NAME
 from ..enums import ESpeakerSelectionMethod
-from ..game_players.base import BaseGamePlayer
+from ..game_players import BaseGamePlayer
 from ..models.state import (
     ChatHistoryModel,
     StateModel,

@@ -1,24 +1,28 @@
 import json
-from typing import Iterable
+from typing import Final, Iterable
 from pydantic import Field
-from .base import BaseGamePlayer
-from .helper import runnable_str2game_player_runnable_input
-from ..llm_utils import extract_name
-from ..enums import ERole, ESide, ESideVictoryCondition
-from ..models.state import (
+from ..base import BaseGamePlayer, BaseGamePlayerRole
+from ..helper import runnable_str2game_player_runnable_input
+from ..player_sides import VillagerSideMixin
+from ..registry import PlayerRoleRegistry
+from ...llm_utils import extract_name
+from ...models.state import (
     MsgModel,
     StateModel,
     create_dict_to_add_safe_player,
 )
 
 
-class Knight(BaseGamePlayer, frozen=True):
+@PlayerRoleRegistry.register
+class Knight(BaseGamePlayerRole, VillagerSideMixin, frozen=True):
 
-    role: ERole = Field(default=ERole.Knight, title="the role of the player")
-    side: ESide = Field(default=ESide.Villager, title="the side of the player")  # noqa
-    victory_condition: str = Field(default=ESideVictoryCondition.VillagersWinCondition.value, title="the victory condition of the player")  # noqa
-    night_action: str = Field(default='Save a player from the werewolves', title="the night action of the player")  # noqa
-    question_to_decide_night_action: str = Field(default='Who do you want to save in this night?', title="the question to decide the night action of the player")  # noqa
+    role: Final[str] = 'knight'
+    night_action: Final[str] = 'Save a player from the werewolves'
+
+    question_to_decide_night_action: str = Field(
+        default='Who do you want to save in this night?',
+        title="the question to decide the night action of the player",
+    )
 
     def act_in_night(
         self,

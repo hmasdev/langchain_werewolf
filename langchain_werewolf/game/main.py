@@ -3,8 +3,11 @@ from typing import Iterable, Callable
 from langchain_core.runnables import Runnable, RunnableLambda, RunnableParallel
 from langgraph.graph import Graph, StateGraph, START, END
 from langgraph.graph.graph import CompiledGraph
-from ..enums import ERole, ETimeSpan
-from ..game_players.base import BaseGamePlayer
+from ..enums import ETimeSpan
+from ..game_players import (
+    BaseGamePlayer,
+    is_werewolf_role,
+)
 from ..models.state import (
     StateModel,
     create_dict_to_update_day,
@@ -40,7 +43,10 @@ def create_game_graph(
 ) -> CompiledGraph:
     # preparation
     players = list(players)
-    werewolves = [player for player in players if player.role == ERole.Werewolf]  # noqa
+    werewolves = [
+        player for player in players
+        if is_werewolf_role(player)
+    ]
     # define the graph
     workflow: Graph = StateGraph(StateModel)
     # add nodes

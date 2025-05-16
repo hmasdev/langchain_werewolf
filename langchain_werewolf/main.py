@@ -1,7 +1,7 @@
 from itertools import cycle
 import logging
 import random
-from typing import Any, Callable, Iterable
+from typing import Any, Callable, Iterable, ParamSpec
 import click
 from dotenv import load_dotenv
 from langchain.globals import set_verbose, set_debug
@@ -9,6 +9,11 @@ import pydantic
 from .const import BASE_LANGUAGE, CLI_PROMPT_COLOR, CLI_ECHO_COLORS
 from .enums import ESystemOutputType, EInputOutputType, ELanguage
 from .game.main import create_game_graph
+from .game_players import (
+    PlayerRoleRegistry,
+    PlayerSideRegistry,
+    WEREWOLF_ROLE,
+)
 from .models.config import Config,  GeneralConfig
 from .models.state import StateModel, MsgModel
 from .setup import generate_players, create_echo_runnable
@@ -17,12 +22,16 @@ from .utils import (
     remove_none_values,
 )
 
+# Initialize
+PlayerRoleRegistry.initialize()
+PlayerSideRegistry.initialize()
+
 DEFAULT_CONFIG = Config(
     general=GeneralConfig(
         n_players=4,
-        n_werewolves=1,
-        n_knights=1,
-        n_fortune_tellers=1,
+        n_players_by_role={
+            WEREWOLF_ROLE: 1,
+        },
         output='',
         system_output_level=ESystemOutputType.all,
         system_output_interface=EInputOutputType.standard,
@@ -43,9 +52,7 @@ DEFAULT_GENERAL_CONFIG = DEFAULT_CONFIG.general
 
 def main(
     n_players: int = DEFAULT_GENERAL_CONFIG.n_players,  # type: ignore # noqa
-    n_werewolves: int = DEFAULT_GENERAL_CONFIG.n_werewolves,  # type: ignore # noqa
-    n_knights: int = DEFAULT_GENERAL_CONFIG.n_knights,  # type: ignore # noqa
-    n_fortune_tellers: int = DEFAULT_GENERAL_CONFIG.n_fortune_tellers,  # type: ignore # noqa
+    n_players_by_role: dict[str, int] = DEFAULT_GENERAL_CONFIG.n_players_by_role,  # type: ignore # noqa
     output: str = DEFAULT_GENERAL_CONFIG.output,  # type: ignore # noqa
     system_output_level:  ESystemOutputType | str = DEFAULT_GENERAL_CONFIG.system_output_level,  # type: ignore # noqa
     system_output_interface: Callable[[str], None] | EInputOutputType = DEFAULT_GENERAL_CONFIG.system_output_interface,  # type: ignore # noqa
@@ -79,9 +86,7 @@ def main(
     config_used = Config(
         general=GeneralConfig(
             n_players=config.general.n_players if (config is not None and config.general.n_players is not None) else n_players,  # noqa
-            n_werewolves=config.general.n_werewolves if (config is not None and config.general.n_werewolves is not None) else n_werewolves,  # noqa
-            n_knights=config.general.n_knights if (config is not None and config.general.n_knights is not None) else n_knights,  # noqa
-            n_fortune_tellers=config.general.n_fortune_tellers if (config is not None and config.general.n_fortune_tellers is not None) else n_fortune_tellers,  # noqa
+            n_players_by_role=config.general.n_players_by_role if (config is not None and config.general.n_players_by_role is not None) else n_players_by_role,  # noqa
             output=config.general.output if (config is not None and config.general.output is not None) else output,  # noqa
             system_output_level=config.general.system_output_level if (config is not None and config.general.system_output_level is not None) else system_output_level,  # noqa
             system_input_interface=config.general.system_input_interface if (config is not None and config.general.system_input_interface is not None) else system_input_interface,  # noqa
@@ -110,9 +115,7 @@ def main(
     # create players
     players = generate_players(
         config_used.general.n_players,  # type: ignore
-        config_used.general.n_werewolves,  # type: ignore
-        config_used.general.n_knights,  # type: ignore
-        config_used.general.n_fortune_tellers,  # type: ignore
+        config_used.general.n_players_by_role,
         model=config_used.general.model,
         seed=config_used.general.seed,  # type: ignore
         player_input_interface=config_used.general.system_input_interface,  # type: ignore # noqa
@@ -155,11 +158,26 @@ def main(
     return state
 
 
+def attach_n_players_by_role_options(
+    cli: Callable[..., None],
+) -> Callable[..., None]:
+
+    roles = PlayerRoleRegistry.get_keys()
+    roles = [role for role in roles if role != WEREWOLF_ROLE] + [WEREWOLF_ROLE]
+
+    for role in roles:
+        cli = click.option(
+            f'--n-{role}',
+            default=DEFAULT_GENERAL_CONFIG.n_players_by_role.get(role, 0),
+            help=f'The number of {role}s. Default is {DEFAULT_GENERAL_CONFIG.n_players_by_role.get(role, 0)}.',
+        )(cli)
+
+    return cli
+
+
 @click.command()
 @click.option('-n', '--n-players', default=DEFAULT_GENERAL_CONFIG.n_players, help=f'The number of players. Default is {DEFAULT_GENERAL_CONFIG.n_players}.')  # noqa
-@click.option('-w', '--n-werewolves', default=DEFAULT_GENERAL_CONFIG.n_werewolves, help=f'The number of werewolves. Default is {DEFAULT_GENERAL_CONFIG.n_werewolves}.')  # noqa
-@click.option('-k', '--n-knights', default=DEFAULT_GENERAL_CONFIG.n_knights, help=f'The number of knights. Default is {DEFAULT_GENERAL_CONFIG.n_knights}.')  # noqa
-@click.option('-f', '--n-fortune-tellers', default=DEFAULT_GENERAL_CONFIG.n_fortune_tellers, help=f'The number of fortune tellers. Default is {DEFAULT_GENERAL_CONFIG.n_fortune_tellers}.')  # noqa
+@attach_n_players_by_role_options
 @click.option('-o', '--output', default=DEFAULT_GENERAL_CONFIG.output, help=f'The output file. Defaults to "{DEFAULT_GENERAL_CONFIG.output}".')  # noqa
 @click.option('-l', '--system-output-level', default=DEFAULT_GENERAL_CONFIG.system_output_level.name if isinstance(DEFAULT_GENERAL_CONFIG.system_output_level, ESystemOutputType) else DEFAULT_GENERAL_CONFIG.system_output_level, help=f'The output type of the CLI. {list(ESystemOutputType.__members__.keys())} and player names are valid. Default is All.')  # noqa
 @click.option('--system-output-interface', default=DEFAULT_GENERAL_CONFIG.system_output_interface.name if isinstance(DEFAULT_GENERAL_CONFIG.system_output_interface, EInputOutputType) else DEFAULT_GENERAL_CONFIG.system_output_interface, help=f'The system interface. Default is {DEFAULT_GENERAL_CONFIG.system_output_interface}.')  # noqa
@@ -172,10 +190,8 @@ def main(
 @click.option('--debug', is_flag=True, help='Enable debug mode.')
 @click.option('--verbose', is_flag=True, help='Enable verbose mode.')
 def cli(
+    *,
     n_players: int = DEFAULT_GENERAL_CONFIG.n_players,  # type: ignore # noqa
-    n_werewolves: int = DEFAULT_GENERAL_CONFIG.n_werewolves,  # type: ignore # noqa
-    n_knights: int = DEFAULT_GENERAL_CONFIG.n_knights,  # type: ignore # noqa
-    n_fortune_tellers: int = DEFAULT_GENERAL_CONFIG.n_fortune_tellers,  # type: ignore # noqa
     output: str = DEFAULT_GENERAL_CONFIG.output,  # type: ignore # noqa
     system_output_level:  str = DEFAULT_GENERAL_CONFIG.system_output_level.name,  # type: ignore # noqa
     system_output_interface: str = DEFAULT_GENERAL_CONFIG.system_output_interface.name,  # type: ignore # noqa
@@ -188,6 +204,7 @@ def cli(
     debug: bool = False,  # type: ignore # noqa
     verbose: bool = False,  # type: ignore # noqa
     logger: logging.Logger = logging.getLogger(__name__),  # type: ignore # noqa,
+    **kwargs,
 ):
     if hasattr(ESystemOutputType, system_output_level):
         system_output_level = ESystemOutputType(system_output_level)  # type: ignore # noqa
@@ -197,9 +214,7 @@ def cli(
         raise ValueError(f'Invalid system interface: {system_output_interface}. Valid values are {list(EInputOutputType.__members__.keys())}.')  # noqa
     main(
         n_players=n_players,
-        n_werewolves=n_werewolves,
-        n_knights=n_knights,
-        n_fortune_tellers=n_fortune_tellers,
+        n_players_by_role={k.replace("n_", ""): int(v) for k, v in kwargs.items()},  # noqa
         output=output,
         system_output_level=system_output_level,
         system_output_interface=system_output_interface,  # type: ignore

@@ -3,8 +3,12 @@ from typing import Callable, Literal, Iterable
 from langchain_core.runnables import Runnable
 from langgraph.graph import Graph, StateGraph, START, END
 from ..const import GAME_MASTER_NAME
-from ..enums import EResult, ERole
-from ..game_players.base import BaseGamePlayer
+from ..enums import EResult
+from ..game_players import (
+    BaseGamePlayer,
+    is_player_with_role,
+    is_werewolf_role,
+)
 from ..models.state import (
     StateModel,
     create_dict_to_record_chat,
@@ -36,7 +40,7 @@ def check_victory_condition(
     n_werewolves: int = len([
         player
         for player in alive_players
-        if player.role == ERole.Werewolf
+        if is_werewolf_role(player)
     ])
     n_villagers: int = n_alive_players - n_werewolves
     if n_werewolves == 0:
@@ -91,7 +95,7 @@ def create_check_victory_condition_subgraph(
                 roles='\n'.join([
                     PLAYER_ROLE_MESSAGE_TEMPLATE.format(
                         name=player.name,
-                        role=player.role.value,
+                        role=is_player_with_role(player) and player.role,  # NOTE: is_player_with_xxx is used for type guard # FIXME # noqa
                         state=(
                             'Alive'
                             if player.name in state.alive_players_names else

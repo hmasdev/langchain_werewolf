@@ -6,11 +6,17 @@ from typing import Callable, Iterable, Literal
 from langchain_core.language_models import BaseChatModel
 from langchain_core.runnables import Runnable, RunnableBranch, RunnableLambda
 from langgraph.graph import END, START, Graph, StateGraph
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from ..const import GAME_MASTER_NAME, DEFAULT_MODEL
-from ..enums import ERole, ESide, ETimeSpan
-from ..game_players.base import BaseGamePlayer
+from ..enums import ETimeSpan
+from ..game_players import (
+    BaseGamePlayer,
+    PlayerRoleRegistry,
+    PlayerSideRegistry,
+    VILLAGER_ROLE,
+    VILLAGER_SIDE,
+)
 from ..llm_utils import extract_name
 from ..models.state import (
     StateModel,
@@ -56,9 +62,23 @@ NAME_EXTRACTION_CONTEXT_PROMPT: str = 'Extract the valid name of the player as t
 
 
 class GeneratePromptInputForVote(BaseModel):
-    player_role: ERole = Field(..., title="the role of the player")
-    player_side: ESide = Field(..., title="the side of the player")
+    player_role: str = Field(..., title="the role of the player")
+    player_side: str = Field(..., title="the side of the player")
     alive_players_names: list[str] = Field(..., title="the names of the alive players")  # noqa
+
+    @field_validator('player_role')
+    @classmethod
+    def validate_player_role(cls, v: str) -> str:
+        if v not in PlayerRoleRegistry.get_keys():
+            raise ValueError(f'Invalid player role: {v}')
+        return v
+
+    @field_validator('player_side')
+    @classmethod
+    def validate_player_side(cls, v: str) -> str:
+        if v not in PlayerSideRegistry.get_keys():
+            raise ValueError(f'Invalid player side: {v}')
+        return v
 
 
 class GenerateSystemPromptInputForVote(BaseModel):
@@ -155,8 +175,8 @@ def _create_run_vote_subgraph(
                 sender=GAME_MASTER_NAME,
                 participants=[GAME_MASTER_NAME]+[p.name for p in players],
                 message=prompt_func(GeneratePromptInputForVote(
-                    player_role=ERole.Villager,
-                    player_side=ESide.Villager,
+                    player_role=VILLAGER_ROLE,
+                    player_side=VILLAGER_SIDE,
                     alive_players_names=[p for p in state.alive_players_names],  # noqa
                 )),
             )

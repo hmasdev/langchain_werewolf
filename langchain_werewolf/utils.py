@@ -6,8 +6,11 @@ from typing import Callable, Generator, Iterable, Sized, TypeVar
 from pydantic import BaseModel
 import pydantic_core
 
-from .enums import ERole, ESide
-from .game_players.base import BaseGamePlayer
+from .game_players import (
+    BaseGamePlayer,
+    PlayerRoleRegistry,
+    PlayerSideRegistry,
+)
 
 T = TypeVar('T')
 PydanticBaseModel = TypeVar('PydanticBaseModel', bound=BaseModel)
@@ -58,36 +61,52 @@ def find_player_by_name(
 
 @assert_not_empty_deco
 def find_players_by_role(
-    role: ERole,
+    role: str,
     players: Iterable[BaseGamePlayer],
 ) -> list[BaseGamePlayer]:
     """Find players by role
 
     Args:
-        role (ERole): the role to be found
+        role (str): the role to be found
         players (Iterable[BaseGamePlayer]): the list of players
 
     Returns:
         list[BaseGamePlayer]: players with the role
+
+    Raises:
+        KeyError: the role is not registered
     """
-    return list(filter(lambda x: x.role == role, players))
+    role_cls = PlayerRoleRegistry.get_class(role)
+    return [
+        player
+        for player in players
+        if isinstance(player, role_cls)
+    ]
 
 
 @assert_not_empty_deco
 def find_players_by_side(
-    side: ESide,
+    side: str,
     players: Iterable[BaseGamePlayer],
 ) -> list[BaseGamePlayer]:
     """Find players by side
 
     Args:
-        side (ESide): the side to be found
+        side (str): the side to be found
         players (Iterable[BaseGamePlayer]): the list of players
 
     Returns:
         list[BaseGamePlayer]: players with the side
+
+    Raises:
+        KeyError: the side is not registered
     """
-    return list(filter(lambda x: x.side == side, players))
+    side_cls = PlayerSideRegistry.get_class(side)
+    return [
+        player
+        for player in players
+        if isinstance(player, side_cls)
+    ]
 
 
 def consecutive_string_generator(

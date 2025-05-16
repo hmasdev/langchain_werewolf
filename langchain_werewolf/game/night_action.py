@@ -4,8 +4,11 @@ from langchain_core.runnables import Runnable
 from langgraph.graph import Graph, StateGraph, START, END
 from pydantic import BaseModel, Field
 from ..const import GAME_MASTER_NAME
-from ..enums import ERole
-from ..game_players.base import BaseGamePlayer
+from ..game_players import (
+    BaseGamePlayer,
+    is_player_with_role,
+    is_werewolf_role,
+)
 from ..game_players.helper import filter_state_according_to_player
 from ..models.state import (
     ChatHistoryModel,
@@ -55,9 +58,9 @@ def _master_ask_player_to_act_in_night(
         participants=[player.name, GAME_MASTER_NAME],
         message=generate_prompt(
             GeneratePromptInputForNightAction(
-                role=player.role.value,
-                night_action=player.night_action or '',
-                question_to_decide_night_action=player.question_to_decide_night_action or '',  # noqa
+                role=is_player_with_role(player) and player.role,
+                night_action=is_player_with_role(player) and player.night_action,  # noqa
+                question_to_decide_night_action=player.question_to_decide_night_action if hasattr(player, "question_to_decide_night_action") else '',  # FIXME # noqa
                 alive_players_names=state.alive_players_names,
             ),
         ),
@@ -82,7 +85,7 @@ def _skip_player_act_in_night(
     not_skip_destination_node_namd: str,
     skip_destination_node_name: str,
 ) -> str:
-    if player.role == ERole.Werewolf:
+    if is_werewolf_role(player):
         return skip_destination_node_name
     if player.name not in state.alive_players_names:
         return skip_destination_node_name

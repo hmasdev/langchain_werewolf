@@ -24,13 +24,18 @@ from .const import (
     MODEL_SERVICE_MAP,
 )
 from .enums import (
-    ERole,
     ESystemOutputType,
     EChatService,
     ELanguage,
     EInputOutputType,
 )
-from .game_players.base import BaseGamePlayer
+from .game_players import (
+    BaseGamePlayer,
+    PlayerRoleRegistry,
+    VILLAGER_ROLE,
+    is_player_with_role,
+    is_player_with_side,
+)
 from .game_players.helper import generate_game_player_runnable, filter_state_according_to_player  # noqa
 from .io import create_input_runnable, create_output_runnable
 from .llm_utils import create_chat_model, create_translator_runnable
@@ -96,9 +101,7 @@ def _generate_base_runnable(
 
 def generate_players(
     n_players: int,
-    n_werewolves: int,
-    n_knights: int,
-    n_fortune_tellers: int,
+    n_players_by_role: dict[str, int],
     custom_players: list[PlayerConfig] = [],
     model: str | None = DEFAULT_MODEL,
     seed: int = -1,
@@ -106,50 +109,52 @@ def generate_players(
     logger: Logger = getLogger(__name__),
 ) -> list[BaseGamePlayer]:
 
-    logger.info(f'n_players: {n_players}')
-    logger.info(f'n_werewolves: {n_werewolves}')
-    logger.info(f'n_knights: {n_knights}')
-    logger.info(f'n_fortune_tellers: {n_fortune_tellers}')
-    logger.info(f'seed: {seed}')
-    logger.info(f'len(custom_players): {len(custom_players)}')
+    logger.info(f"n_players: {n_players}")
+    logger.info(f"n_players_per_role: {n_players_by_role}")
+    logger.info(f"seed: {seed}")
+    logger.info(f"len(custom_players): {len(custom_players)}")
 
     # initialize
-    if n_players < n_werewolves:
-        raise ValueError(f'The number of players ({n_players}) is less than the number of werewolves ({n_werewolves}).')  # noqa
-    if n_players < n_knights:
-        raise ValueError(f'The number of players ({n_players}) is less than the number of knights ({n_knights}).')  # noqa
-    if n_players < n_fortune_tellers:
-        raise ValueError(f'The number of players ({n_players}) is less than the number of fortune tellers ({n_fortune_tellers}).')  # noqa
-    n_villagers = n_players - n_werewolves - n_knights - n_fortune_tellers
-    if n_villagers < 0:
-        raise ValueError(f'n_players - n_werewolves - n_knights - n_fortune_tellers = {n_players} - {n_werewolves} - {n_knights} - {n_fortune_tellers} is less than 0.')  # noqa
+    if VILLAGER_ROLE not in n_players_by_role or n_players_by_role[VILLAGER_ROLE] <= 0:
+        n_players_by_role[VILLAGER_ROLE] = n_players - sum(n_players_by_role.values())  # noqa
+    for role, num in n_players_by_role.items():
+        if n_players <= num:
+            raise ValueError(
+                f"The number of players ({n_players}) is less than or equal to the number of players with {role=} ({num}). "  # noqa
+                "The number of players must be greater than the number of players with each role."  # noqa
+            )
+        if num < 0:
+            raise ValueError(
+                f"The number of players with {role=} ({num}) is less than 0. "
+                "The number of players with each role must be greater than or equal to 0."  # noqa
+                f"Especially, the sum of numbers of players without {VILLAGER_ROLE} must be less than {n_players}."  # noqa
+            )
 
     # validate the number of players
     if n_players < len(custom_players):
-        raise ValueError(f'The number of players ({n_players}) is less than the number of custom players ({len(custom_players)}).')  # noqa
+        raise ValueError(
+            f"The number of players ({n_players}) is less than the number of custom players ({len(custom_players)})."  # noqa
+            "The number of custom players must be less than or equal to the number of players."  # noqa
+        )
 
     # create config of players
     players_cfg = custom_players[::] + [None] * (n_players-len(custom_players))  # noqa
-    roles = [player.role if player else None for player in players_cfg]  # noqa
+    roles = [p_cfg.role if p_cfg else None for p_cfg in players_cfg]  # noqa
 
     # validate the number of roles
     counter = Counter(roles)
-    if n_werewolves < counter.get(ERole.Werewolf, 0):
-        raise ValueError(f'The number of werewolves ({n_werewolves}) is less than the number of custom werewolves ({counter.get(ERole.Werewolf, 0)}).')  # noqa
-    if n_knights < counter.get(ERole.Knight, 0):
-        raise ValueError(f'The number of knights ({n_knights}) is less than the number of custom knights ({counter.get(ERole.Knight, 0)}).')  # noqa
-    if n_fortune_tellers < counter.get(ERole.FortuneTeller, 0):
-        raise ValueError(f'The number of fortune tellers ({n_fortune_tellers}) is less than the number of custom fortune tellers ({counter.get(ERole.FortuneTeller, 0)}).')  # noqa
-    if n_villagers < counter.get(ERole.Villager, 0):
-        raise ValueError(f'The number of villagers ({n_villagers}) is less than the number of custom villagers ({counter.get(ERole.Villager, 0)}).')  # noqa
+    for role, num in n_players_by_role.items():
+        if num < counter.get(role, 0):
+            raise ValueError(
+                f"The number of players with {role} ({num}) is less than the number of custom players with {role} ({counter.get(role, 0)})."  # noqa
+                "The number of players with each role must be greater than or equal to the number of custom players with each role."  # noqa
+            )
 
     # randome roles
-    generated_roles: list[ERole] = list(chain(
-        [ERole.Werewolf] * (n_werewolves-counter.get(ERole.Werewolf, 0)),
-        [ERole.Knight] * (n_knights-counter.get(ERole.Knight, 0)),
-        [ERole.FortuneTeller] * (n_fortune_tellers-counter.get(ERole.FortuneTeller, 0)),  # noqa
-        [ERole.Villager] * (n_villagers-counter.get(ERole.Villager, 0)),
-    ))
+    generated_roles: list[str] = sum([
+        [role] * (num - counter.get(role, 0))
+        for role, num in n_players_by_role.items()
+    ], [])
     random.shuffle(generated_roles)
 
     translators = [
@@ -177,8 +182,8 @@ def generate_players(
     # generate players
     name_generator = consecutive_string_generator(DEFAULT_PLAYER_PREFIX)
     players = [
-        BaseGamePlayer.instantiate(
-            role=player_cfg.role if player_cfg and player_cfg.role else generated_roles.pop(),  # noqa
+        PlayerRoleRegistry.create_player(
+            key=player_cfg.role if player_cfg and player_cfg.role else generated_roles.pop(),  # noqa
             name=player_cfg.name if player_cfg and player_cfg.name else name_generator.__next__(),  # noqa
             runnable=generate_game_player_runnable(_generate_base_runnable(
                 player_cfg.model if hasattr(player_cfg, 'model') else model,  # type: ignore # noqa
@@ -198,7 +203,8 @@ def generate_players(
     ]
     # Internal Error
     assert len(players) == n_players
-    assert all(player.ready() for player in players), players
+    assert all(map(is_player_with_side, players))
+    assert all(map(is_player_with_role, players))
     return players
 
 

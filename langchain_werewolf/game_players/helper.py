@@ -8,7 +8,7 @@ from langchain_core.runnables import (
     RunnablePassthrough,
 )
 from .base import GamePlayerRunnableInputModel, BaseGamePlayer
-from ..enums import ERole
+from .utils import is_werewolf_role
 from ..models.state import (
     MsgModel,
     StateModel,
@@ -101,7 +101,7 @@ def filter_state_according_to_player(
         # NOTE: nighttime votes are only revealed to werewolves
         nighttime_votes_history=(
             state.nighttime_votes_history
-            if player.role == ERole.Werewolf
+            if is_werewolf_role(player)
             else []
         ),
         result=state.result,
