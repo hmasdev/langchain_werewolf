@@ -3,8 +3,13 @@ from dotenv import load_dotenv
 from langchain_core.runnables import RunnableLambda
 import pytest
 from langchain_werewolf.const import GAME_MASTER_NAME
-from langchain_werewolf.enums import ERole
-from langchain_werewolf.game_players.base import BaseGamePlayer
+from langchain_werewolf.game_players import BaseGamePlayer
+from langchain_werewolf.game_players.player_roles import (
+    FortuneTeller,
+    Knight,
+    Villager,
+    Werewolf,
+)
 from langchain_werewolf.models.state import StateModel
 
 load_dotenv()
@@ -15,35 +20,35 @@ load_dotenv()
     [
         (
             [
-                BaseGamePlayer.instantiate(
-                    role=ERole.Villager,
-                    name='Alice',
-                    runnable=RunnableLambda(str),
-                ),
-                BaseGamePlayer.instantiate(
-                    role=ERole.Werewolf,
-                    name='Bob',
-                    runnable=RunnableLambda(str),
-                ),
+                Villager(name='Alice', runnable=RunnableLambda(str)),
+                Werewolf(name='Bob', runnable=RunnableLambda(str)),
             ],
             'Alice',
             'Alice is not a werewolf',
         ),
         (
             [
-                BaseGamePlayer.instantiate(
-                    role=ERole.Villager,
-                    name='Alice',
-                    runnable=RunnableLambda(str),
-                ),
-                BaseGamePlayer.instantiate(
-                    role=ERole.Werewolf,
-                    name='Bob',
-                    runnable=RunnableLambda(str),
-                ),
+                Villager(name='Alice', runnable=RunnableLambda(str)),
+                Werewolf(name='Bob', runnable=RunnableLambda(str)),
             ],
             'Bob',
             'Bob is a werewolf',
+        ),
+        (
+            [
+                FortuneTeller(name='Alice', runnable=RunnableLambda(str)),
+                Werewolf(name='Bob', runnable=RunnableLambda(str)),
+            ],
+            'Alice',
+            'Alice is not a werewolf',
+        ),
+        (
+            [
+                Knight(name='Alice', runnable=RunnableLambda(str)),
+                Werewolf(name='Bob', runnable=RunnableLambda(str)),
+            ],
+            'Alice',
+            'Alice is not a werewolf',
         ),
     ]
 )
@@ -53,9 +58,8 @@ def test_fortune_teller_act_in_night(
     expected: dict[str, object],
 ) -> None:
     # preparation
-    player = BaseGamePlayer.instantiate(
+    player = FortuneTeller(
         name='Charlie',
-        role=ERole.FortuneTeller,
         runnable=RunnableLambda(lambda _: runnable_output).with_types(output_type=str),  # noqa
     )
     # execution

@@ -7,6 +7,11 @@ from langchain_werewolf.enums import (
     ELanguage,
     ESystemOutputType,
 )
+from langchain_werewolf.game_players.player_roles import (
+    FortuneTeller,
+    Knight,
+    Werewolf,
+)
 from langchain_werewolf.main import main
 from langchain_werewolf.models.config import Config, GeneralConfig
 
@@ -25,18 +30,22 @@ load_dotenv()
         Config(
             general=GeneralConfig(
                 n_players=4,
-                n_werewolves=1,
-                n_knights=1,
-                n_fortune_tellers=1,
+                n_players_by_role={
+                    Werewolf.role: 1,
+                    Knight.role: 1,
+                    FortuneTeller.role: 1,
+                },
                 seed=-1,
             ),
         ),
         Config(
             general=GeneralConfig(
                 n_players=4,
-                n_werewolves=1,
-                n_knights=1,
-                n_fortune_tellers=1,
+                n_players_by_role={
+                    Werewolf.role: 1,
+                    Knight.role: 1,
+                    FortuneTeller.role: 1,
+                },
                 seed=-1,
                 system_language=ELanguage.Japanese,
             ),
@@ -44,9 +53,11 @@ load_dotenv()
         Config(
             general=GeneralConfig(
                 n_players=4,
-                n_werewolves=1,
-                n_knights=1,
-                n_fortune_tellers=1,
+                n_players_by_role={
+                    Werewolf.role: 1,
+                    Knight.role: 1,
+                    FortuneTeller.role: 1,
+                },
                 seed=-1,
                 system_language=ELanguage.German,
             ),
@@ -56,9 +67,11 @@ load_dotenv()
 def test_main_integration(config: Config) -> None:
     state = main(
         n_players=4,
-        n_werewolves=1,
-        n_knights=1,
-        n_fortune_tellers=1,
+        n_players_by_role={
+            Werewolf.role: 1,
+            Knight.role: 1,
+            FortuneTeller.role: 1,
+        },
         output='',
         system_output_level=ESystemOutputType.off,
         system_output_interface=EInputOutputType.standard,

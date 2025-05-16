@@ -4,7 +4,6 @@ from langchain_core.runnables import Runnable
 from pydantic import ValidationError
 import pytest
 from pytest_mock import MockerFixture
-from langchain_werewolf.enums import ERole, ESide
 from langchain_werewolf.game_players.base import (
     BaseGamePlayer,
     _DEFAULT_FORMATTER,
@@ -25,11 +24,6 @@ def test_BaseGamePlayer_receive_message_with_default_formatter(
     output_mock = mocker.MagicMock(spec=Runnable[str, None])
     player = BaseGamePlayer(
         name='name',
-        role=ERole.Villager,
-        side=ESide.Villager,
-        victory_condition='victory_condition',
-        night_action='night_action',
-        question_to_decide_night_action='question_to_decide_night_action',
         runnable=runnable_mock,
         output=output_mock,
     )
@@ -52,11 +46,6 @@ def test_BaseGamePlayer_receive_message_with_callable_foratter(
     output_mock = mocker.MagicMock(spec=Runnable[str, None])
     player = BaseGamePlayer(
         name='name',
-        role=ERole.Villager,
-        side=ESide.Villager,
-        victory_condition='victory_condition',
-        night_action='night_action',
-        question_to_decide_night_action='question_to_decide_night_action',
         runnable=runnable_mock,
         output=output_mock,
         formatter=formatter,
@@ -85,11 +74,6 @@ def test_BaseGamePlayer_receive_message_with_str_formatter(
     output_mock = mocker.MagicMock(spec=Runnable[str, None])
     player = BaseGamePlayer(
         name='name',
-        role=ERole.Villager,
-        side=ESide.Villager,
-        victory_condition='victory_condition',
-        night_action='night_action',
-        question_to_decide_night_action='question_to_decide_night_action',
         runnable=runnable_mock,
         output=output_mock,
         formatter=formatter,
@@ -113,11 +97,6 @@ def test_BaseGamePlayer_receive_message_with_invalid_formatter(
     with pytest.raises(ValidationError):
         BaseGamePlayer(
             name='name',
-            role=ERole.Villager,
-            side=ESide.Villager,
-            victory_condition='victory_condition',
-            night_action='night_action',
-            question_to_decide_night_action='question_to_decide_night_action',
             runnable=runnable_mock,
             output=output_mock,
             formatter=formatter

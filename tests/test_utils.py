@@ -2,8 +2,12 @@ from typing import Callable, TypeVar
 import pytest
 from pytest_mock import MockerFixture
 from langchain_core.runnables import RunnableLambda
-from langchain_werewolf.enums import ERole, ESide
-from langchain_werewolf.game_players.base import BaseGamePlayer
+from langchain_werewolf.game_players import BaseGamePlayer
+from langchain_werewolf.game_players.player_roles import (
+    Villager,
+    Werewolf,
+)
+from langchain_werewolf.game_players.registry import PlayerRoleRegistry
 from langchain_werewolf.utils import (
     assert_not_empty_deco,
     find_player_by_name,
@@ -33,19 +37,19 @@ def test_assert_not_empty_deco():
         (
             'Alice',
             [
-                BaseGamePlayer.instantiate(
-                    role=ERole.Villager,
+                PlayerRoleRegistry.create_player(
+                    key=Villager.role,
                     name='Alice',
                     runnable=RunnableLambda(str),
                 ),
-                BaseGamePlayer.instantiate(
-                    role=ERole.Werewolf,
+                PlayerRoleRegistry.create_player(
+                    key=Werewolf.role,
                     name='Bob',
                     runnable=RunnableLambda(str),
                 ),
             ],
-            BaseGamePlayer.instantiate(
-                role=ERole.Villager,
+            PlayerRoleRegistry.create_player(
+                key=Villager.role,
                 name='Alice',
                 runnable=RunnableLambda(str),
             ),
@@ -53,19 +57,19 @@ def test_assert_not_empty_deco():
         (
             'Bob',
             [
-                BaseGamePlayer.instantiate(
-                    role=ERole.Villager,
+                PlayerRoleRegistry.create_player(
+                    key=Villager.role,
                     name='Alice',
                     runnable=RunnableLambda(str),
                 ),
-                BaseGamePlayer.instantiate(
-                    role=ERole.Werewolf,
+                PlayerRoleRegistry.create_player(
+                    key=Werewolf.role,
                     name='Bob',
                     runnable=RunnableLambda(str),
                 ),
             ],
-            BaseGamePlayer.instantiate(
-                role=ERole.Werewolf,
+            PlayerRoleRegistry.create_player(
+                key=Werewolf.role,
                 name='Bob',
                 runnable=RunnableLambda(str),
             ),
@@ -90,8 +94,8 @@ def test_find_player_by_name_not_unique():
         find_player_by_name(
             'Alice',
             [
-                BaseGamePlayer.instantiate(
-                    role=ERole.Villager,
+                PlayerRoleRegistry.create_player(
+                    key=Villager.role,
                     name='Alice',
                     runnable=RunnableLambda(str),
                 ),
@@ -103,59 +107,59 @@ def test_find_player_by_name_not_unique():
     'role, players, expected',
     [
         (
-            ERole.Villager,
+            Villager.role,
             [
-                BaseGamePlayer.instantiate(
-                    role=ERole.Villager,
+                PlayerRoleRegistry.create_player(
+                    key=Villager.role,
                     name='Alice',
                     runnable=RunnableLambda(str),
                 ),
-                BaseGamePlayer.instantiate(
-                    role=ERole.Werewolf,
+                PlayerRoleRegistry.create_player(
+                    key=Werewolf.role,
                     name='Bob',
                     runnable=RunnableLambda(str),
                 ),
-                BaseGamePlayer.instantiate(
-                    role=ERole.Villager,
+                PlayerRoleRegistry.create_player(
+                    key=Villager.role,
                     name='Charlie',
                     runnable=RunnableLambda(str),
                 ),
             ],
             [
-                BaseGamePlayer.instantiate(
-                    role=ERole.Villager,
+                PlayerRoleRegistry.create_player(
+                    key=Villager.role,
                     name='Alice',
                     runnable=RunnableLambda(str),
                 ),
-                BaseGamePlayer.instantiate(
-                    role=ERole.Villager,
+                PlayerRoleRegistry.create_player(
+                    key=Villager.role,
                     name='Charlie',
                     runnable=RunnableLambda(str),
                 ),
             ],
         ),
         (
-            ERole.Werewolf,
+            Werewolf.role,
             [
-                BaseGamePlayer.instantiate(
-                    role=ERole.Villager,
+                PlayerRoleRegistry.create_player(
+                    key=Villager.role,
                     name='Alice',
                     runnable=RunnableLambda(str),
                 ),
-                BaseGamePlayer.instantiate(
-                    role=ERole.Werewolf,
+                PlayerRoleRegistry.create_player(
+                    key=Werewolf.role,
                     name='Bob',
                     runnable=RunnableLambda(str),
                 ),
-                BaseGamePlayer.instantiate(
-                    role=ERole.Villager,
+                PlayerRoleRegistry.create_player(
+                    key=Villager.role,
                     name='Charlie',
                     runnable=RunnableLambda(str),
                 ),
             ],
             [
-                BaseGamePlayer.instantiate(
-                    role=ERole.Werewolf,
+                PlayerRoleRegistry.create_player(
+                    key=Werewolf.role,
                     name='Bob',
                     runnable=RunnableLambda(str),
                 ),
@@ -164,7 +168,7 @@ def test_find_player_by_name_not_unique():
     ],
 )
 def test_find_players_by_role(
-    role: ERole,
+    role: str,
     players: list[BaseGamePlayer],
     expected: list[BaseGamePlayer],
 ):
@@ -173,66 +177,66 @@ def test_find_players_by_role(
 
 def test_find_players_by_role_not_found():
     with pytest.raises(ValueError):
-        find_players_by_role(ERole.Villager, [])
+        find_players_by_role(Villager.role, [])
 
 
 @pytest.mark.parametrize(
     'side, players, expected',
     [
         (
-            ESide.Villager,
+            Villager.side,
             [
-                BaseGamePlayer.instantiate(
-                    role=ERole.Villager,
+                PlayerRoleRegistry.create_player(
+                    key=Villager.role,
                     name='Alice',
                     runnable=RunnableLambda(str),
                 ),
-                BaseGamePlayer.instantiate(
-                    role=ERole.Werewolf,
+                PlayerRoleRegistry.create_player(
+                    key=Werewolf.role,
                     name='Bob',
                     runnable=RunnableLambda(str),
                 ),
-                BaseGamePlayer.instantiate(
-                    role=ERole.Villager,
+                PlayerRoleRegistry.create_player(
+                    key=Villager.role,
                     name='Charlie',
                     runnable=RunnableLambda(str),
                 ),
             ],
             [
-                BaseGamePlayer.instantiate(
-                    role=ERole.Villager,
+                PlayerRoleRegistry.create_player(
+                    key=Villager.role,
                     name='Alice',
                     runnable=RunnableLambda(str),
                 ),
-                BaseGamePlayer.instantiate(
-                    role=ERole.Villager,
+                PlayerRoleRegistry.create_player(
+                    key=Villager.role,
                     name='Charlie',
                     runnable=RunnableLambda(str),
                 ),
             ],
         ),
         (
-            ESide.Werewolf,
+            Werewolf.side,
             [
-                BaseGamePlayer.instantiate(
-                    role=ERole.Villager,
+                PlayerRoleRegistry.create_player(
+                    key=Villager.role,
                     name='Alice',
                     runnable=RunnableLambda(str),
                 ),
-                BaseGamePlayer.instantiate(
-                    role=ERole.Werewolf,
+                PlayerRoleRegistry.create_player(
+                    key=Werewolf.role,
                     name='Bob',
                     runnable=RunnableLambda(str),
                 ),
-                BaseGamePlayer.instantiate(
-                    role=ERole.Villager,
+                PlayerRoleRegistry.create_player(
+                    key=Villager.role,
                     name='Charlie',
                     runnable=RunnableLambda(str),
                 ),
             ],
             [
-                BaseGamePlayer.instantiate(
-                    role=ERole.Werewolf,
+                PlayerRoleRegistry.create_player(
+                    key=Werewolf.role,
                     name='Bob',
                     runnable=RunnableLambda(str),
                 ),
@@ -241,7 +245,7 @@ def test_find_players_by_role_not_found():
     ],
 )
 def test_find_players_by_side(
-    side: ESide,
+    side: str,
     players: list[BaseGamePlayer],
     expected: list[BaseGamePlayer],
 ):
@@ -250,7 +254,7 @@ def test_find_players_by_side(
 
 def test_find_players_by_side_not_found():
     with pytest.raises(ValueError):
-        find_players_by_side(ESide.Villager, [])
+        find_players_by_side(Villager.side, [])
 
 
 @pytest.mark.parametrize(
