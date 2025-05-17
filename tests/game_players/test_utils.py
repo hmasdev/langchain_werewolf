@@ -25,7 +25,7 @@ from langchain_werewolf.game_players.utils import (
         (Villager(name="Alice", runnable=lambda _: "hello"), False),
         (Werewolf(name="Bob", runnable=lambda _: "hello"), True),
         (BaseGamePlayer(name="Charlie", runnable=lambda _: "hello"), False),
-        (BaseGamePlayerRole(name="Charlie", runnable=lambda _: "hello"), False),
+        (BaseGamePlayerRole(name="Charlie", runnable=lambda _: "hello"), False),  # noqa
         (BasePlayerSideMixin(), False),
         (VillagerSideMixin(), False),
         (WerewolfSideMixin(), False),
@@ -45,7 +45,7 @@ def test_is_werewolf_role(
         (Villager(name="Alice", runnable=lambda _: "hello"), False),
         (Werewolf(name="Bob", runnable=lambda _: "hello"), True),
         (BaseGamePlayer(name="Charlie", runnable=lambda _: "hello"), False),
-        (BaseGamePlayerRole(name="Charlie", runnable=lambda _: "hello"), False),
+        (BaseGamePlayerRole(name="Charlie", runnable=lambda _: "hello"), False),  # noqa
         (BasePlayerSideMixin(), False),
         (VillagerSideMixin(), False),
         (WerewolfSideMixin(), True),
@@ -65,7 +65,7 @@ def test_is_werewolf_side(
         (Villager(name="Alice", runnable=lambda _: "hello"), True),
         (Werewolf(name="Bob", runnable=lambda _: "hello"), True),
         (BaseGamePlayer(name="Charlie", runnable=lambda _: "hello"), False),
-        (BaseGamePlayerRole(name="Charlie", runnable=lambda _: "hello"), False),
+        (BaseGamePlayerRole(name="Charlie", runnable=lambda _: "hello"), False),  # noqa
         (BasePlayerSideMixin(), True),
         (VillagerSideMixin(), True),
         (WerewolfSideMixin(), True),
@@ -105,7 +105,7 @@ def test_is_player_with_role(
         (Villager(name="Alice", runnable=lambda _: "hello"), True),
         (Werewolf(name="Bob", runnable=lambda _: "hello"), True),
         (BaseGamePlayer(name="Charlie", runnable=lambda _: "hello"), False),
-        (BaseGamePlayerRole(name="Charlie", runnable=lambda _: "hello"), False),
+        (BaseGamePlayerRole(name="Charlie", runnable=lambda _: "hello"), False),  # noqa
         (BasePlayerSideMixin(), False),
         (VillagerSideMixin(), False),
         (WerewolfSideMixin(), False),

@@ -3,7 +3,7 @@ import pytest
 from langchain_werewolf.const import GAME_MASTER_NAME
 from langchain_werewolf.game.chat import _player_speak
 from langchain_werewolf.game.prompts import SYSTEM_PROMPT_TEMPLATE
-from langchain_werewolf.game_players import BaseGamePlayer, VILLAGER_ROLE
+from langchain_werewolf.game_players import VILLAGER_ROLE
 from langchain_werewolf.game_players.registry import PlayerRoleRegistry
 from langchain_werewolf.models.state import StateModel
 

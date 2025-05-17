@@ -5,7 +5,6 @@ from langchain_werewolf.game.check_result import (
     check_victory_condition,
 )
 from langchain_werewolf.game_players import (
-    BaseGamePlayer,
     VILLAGER_ROLE,
     WEREWOLF_ROLE,
 )

@@ -73,7 +73,7 @@ def test_player_role_registry_register(
     assert actual is player_role
     # NOTE: assert key is player_role.role
     assert player_role.role in empty_player_role_registry._registry
-    assert empty_player_role_registry._registry[player_role.role] is player_role
+    assert empty_player_role_registry._registry[player_role.role] is player_role  # noqa
 
 
 @pytest.mark.parametrize(
@@ -88,7 +88,7 @@ def test_player_role_registry_register_invalid_plaer_role(
     invalid_player_role: type[BaseGamePlayerRole],
     empty_player_role_registry: type[PlayerRoleRegistry],
 ) -> None:
-    """Test the registration of invalid player roles in the PlayerRoleRegistry."""
+    """Test the registration of invalid player roles in the PlayerRoleRegistry."""  # noqa
     # execution
     with pytest.raises(TypeError):
         empty_player_role_registry.register(invalid_player_role)
@@ -309,7 +309,7 @@ def test_player_side_registry_register_invalid_player_side(
     invalid_player_side: type[BasePlayerSideMixin],
     empty_player_side_registry: type[PlayerSideRegistry],
 ) -> None:
-    """Test the registration of invalid player sides in the PlayerSideRegistry."""
+    """Test the registration of invalid player sides in the PlayerSideRegistry."""  # noqa
     # execution
     with pytest.raises(TypeError):
         empty_player_side_registry.register(invalid_player_side)

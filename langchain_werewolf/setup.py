@@ -1,6 +1,6 @@
 from collections import Counter
 from functools import partial
-from itertools import chain, cycle
+from itertools import cycle
 from logging import getLogger, Logger
 from operator import attrgetter
 import random
@@ -115,7 +115,7 @@ def generate_players(
     logger.info(f"len(custom_players): {len(custom_players)}")
 
     # initialize
-    if VILLAGER_ROLE not in n_players_by_role or n_players_by_role[VILLAGER_ROLE] <= 0:
+    if VILLAGER_ROLE not in n_players_by_role or n_players_by_role[VILLAGER_ROLE] <= 0:  # noqa
         n_players_by_role[VILLAGER_ROLE] = n_players - sum(n_players_by_role.values())  # noqa
     for role, num in n_players_by_role.items():
         if n_players <= num:

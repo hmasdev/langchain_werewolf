@@ -17,7 +17,6 @@ from ..models.state import (
     MsgModel,
     StateModel,
     create_dict_without_state_updated,
-    get_related_messsages,
 )
 
 
@@ -33,7 +32,7 @@ class BaseGamePlayer(BaseModel, frozen=True):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     name: str = Field(..., title="the name of the player")
-    runnable: SkipValidation[Runnable[GamePlayerRunnableInputModel, str]] = Field(
+    runnable: SkipValidation[Runnable[GamePlayerRunnableInputModel, str]] = Field(  # noqa
         title="a runnable to define player's behavior",
         description="a runnable to define player's behavior which receives prompt and sysmtem prompt from the game and returns a player's message",  # noqa
     )

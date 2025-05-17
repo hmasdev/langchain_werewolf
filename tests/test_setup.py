@@ -15,7 +15,6 @@ from langchain_werewolf.enums import (
     ETimeSpan,
 )
 from langchain_werewolf.game_players.base import (
-    BaseGamePlayer,
     GamePlayerRunnableInputModel,
 )
 from langchain_werewolf.game_players.player_roles import (

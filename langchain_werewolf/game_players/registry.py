@@ -64,7 +64,7 @@ class PlayerSideRegistry:
             type[BasePlayerSideMixin]: the side class associated with the given key
         Raises:
             KeyError: if the key is not registered
-        """
+        """  # noqa
         try:
             return cls._registry[key]
         except KeyError:
@@ -91,8 +91,8 @@ class PlayerSideRegistry:
         """
         Initialize the registry with all sides in the following module registered:
             `langchain_werewolf.game_players.player_sides`
-        """
-        from .player_sides import __auto_registered__
+        """  # noqa
+        from .player_sides import __auto_registered__  # noqa
         return cls
 
 
@@ -101,7 +101,10 @@ class PlayerRoleRegistry:
     _registry: dict[str, type[BaseGamePlayerRole]] = {}
 
     @classmethod
-    def register(cls, role_class: type[BaseGamePlayerRole]) -> type[BaseGamePlayerRole]:
+    def register(
+        cls,
+        role_class: type[BaseGamePlayerRole],
+    ) -> type[BaseGamePlayerRole]:
         """Register a new role class
         Args:
             role_class (type[BasePlayerSideMixin]): the class of the role
@@ -181,7 +184,7 @@ class PlayerRoleRegistry:
             BaseGamePlayer: the player
         Raises:
             KeyError: the key is not registered
-        """
+        """  # noqa
         try:
             role_cls = cls.get_class(key)
             return role_cls(name=name, runnable=runnable, **kwargs)  # noqa
@@ -193,6 +196,6 @@ class PlayerRoleRegistry:
         """
         Initialize the registry with all roles in the following module registered:
             `langchain_werewolf.game_players.player_roles`
-        """
-        from .player_roles import __auto_registered__
+        """  # noqa
+        from .player_roles import __auto_registered__  # noqa
         return cls

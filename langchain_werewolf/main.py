@@ -1,7 +1,7 @@
 from itertools import cycle
 import logging
 import random
-from typing import Any, Callable, Iterable, ParamSpec
+from typing import Any, Callable, Iterable
 import click
 from dotenv import load_dotenv
 from langchain.globals import set_verbose, set_debug
@@ -169,7 +169,7 @@ def attach_n_players_by_role_options(
         cli = click.option(
             f'--n-{role}',
             default=DEFAULT_GENERAL_CONFIG.n_players_by_role.get(role, 0),
-            help=f'The number of {role}s. Default is {DEFAULT_GENERAL_CONFIG.n_players_by_role.get(role, 0)}.',
+            help=f'The number of {role}s. Default is {DEFAULT_GENERAL_CONFIG.n_players_by_role.get(role, 0)}.',  # noqa
         )(cli)
 
     return cli
