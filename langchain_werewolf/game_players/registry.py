@@ -40,7 +40,8 @@ class PlayerSideRegistry:
             side_class (type[BasePlayerSideMixin]):
                 a subclass of BasePlayerSideMixin representing a player's side.
         """
-        for key, cls_side in cls._registry.items():
+        registry_clone: dict[str, type[BasePlayerSideMixin]] = cls._registry.copy()  # noqa
+        for key, cls_side in registry_clone.items():
             if cls_side is side_class:
                 del cls._registry[key]
 
@@ -119,7 +120,8 @@ class PlayerRoleRegistry:
         Args:
             role_class (type[BasePlayerSideMixin]): the class of the role
         """
-        for key, cls_role in cls._registry.items():
+        registry_clone: dict[str, type[BaseGamePlayerRole]] = cls._registry.copy()  # noqa
+        for key, cls_role in registry_clone.items():
             if cls_role is role_class:
                 del cls._registry[key]
 
