@@ -1,5 +1,5 @@
 import json
-from typing import Final, Iterable
+from typing import ClassVar, Iterable
 from pydantic import Field
 from ..base import BaseGamePlayer, BaseGamePlayerRole
 from ..helper import runnable_str2game_player_runnable_input
@@ -16,8 +16,8 @@ from ...models.state import (
 @PlayerRoleRegistry.register
 class Knight(BaseGamePlayerRole, VillagerSideMixin, frozen=True):
 
-    role: Final[str] = 'knight'
-    night_action: Final[str] = 'Save a player from the werewolves'
+    role: ClassVar[str] = 'knight'
+    night_action: ClassVar[str] = 'Save a player from the werewolves'
 
     question_to_decide_night_action: str = Field(
         default='Who do you want to save in this night?',

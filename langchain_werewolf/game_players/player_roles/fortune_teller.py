@@ -1,5 +1,5 @@
 import json
-from typing import Final, Iterable
+from typing import ClassVar, Iterable
 from pydantic import Field
 from ..base import BaseGamePlayer, BaseGamePlayerRole
 from ..helper import runnable_str2game_player_runnable_input
@@ -19,8 +19,8 @@ from ...utils import find_player_by_name
 @PlayerRoleRegistry.register
 class FortuneTeller(BaseGamePlayerRole, VillagerSideMixin, frozen=True):
 
-    role: Final[str] = 'fortuneteller'
-    night_action: Final[str] = 'Check whether a player is a werewolf or not'
+    role: ClassVar[str] = 'fortuneteller'
+    night_action: ClassVar[str] = 'Check whether a player is a werewolf or not'  # noqa
 
     question_to_decide_night_action: str = Field(
         'Who do you want to check whether he/she is a werewolf or not?',
