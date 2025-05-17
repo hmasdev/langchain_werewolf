@@ -5,8 +5,10 @@ from pydantic import ValidationError
 import pytest
 from pytest_mock import MockerFixture
 from langchain_werewolf.game_players.base import (
-    BaseGamePlayer,
     _DEFAULT_FORMATTER,
+    BaseGamePlayer,
+    BaseGamePlayerRole,
+    BasePlayerSideMixin,
     GamePlayerRunnableInputModel,
 )
 from langchain_werewolf.models.state import MsgModel
@@ -101,3 +103,57 @@ def test_BaseGamePlayer_receive_message_with_invalid_formatter(
             output=output_mock,
             formatter=formatter
         )
+
+
+def test_BaseGamePlayerRole_enforce_attributes_implementation() -> None:
+
+    # Positive test
+    class WithRoleWithNightAction(BaseGamePlayerRole):
+        role: str = 'role'
+        night_action: str = 'night_action'
+
+    # Negative test
+    with pytest.raises(NotImplementedError):
+        class WithRoleWithoutNightAction(BaseGamePlayerRole):
+            role: str = 'role'
+
+    with pytest.raises(NotImplementedError):
+        class WithoutRoleWithNightAction(BaseGamePlayerRole):
+            night_action: str = 'night_action'
+
+    with pytest.raises(TypeError):
+        class WithRoleWithInvalidNightAction(BaseGamePlayerRole):
+            role: str = 'role'
+            night_action: int = 1
+
+    with pytest.raises(TypeError):
+        class WithInvalidRoleWithNightAction(BaseGamePlayerRole):
+            role: int = 1
+            night_action: str = 'night_action'
+
+
+def test_BasePlayerSideMixin_enforce_attributes_implementation() -> None:
+
+    # Positive test
+    class WithPlayerSide(BasePlayerSideMixin):
+        side: str = 'side'
+        victory_condition: str = 'victory_condition'
+
+    # Negative test
+    with pytest.raises(NotImplementedError):
+        class WithPlayerSideWithoutVictoryCondition(BasePlayerSideMixin):
+            side: str = 'side'
+
+    with pytest.raises(NotImplementedError):
+        class WithoutPlayerSideWithVictoryCondition(BasePlayerSideMixin):
+            victory_condition: str = 'victory_condition'
+
+    with pytest.raises(TypeError):
+        class WithPlayerSideWithInvalidVictoryCondition(BasePlayerSideMixin):
+            side: str = 'side'
+            victory_condition: int = 1
+
+    with pytest.raises(TypeError):
+        class WithInvalidPlayerSideWithVictoryCondition(BasePlayerSideMixin):
+            side: int = 1
+            victory_condition: str = 'victory_condition'
