@@ -11,7 +11,7 @@ from pydantic import BaseModel, Field, field_validator
 from ..const import GAME_MASTER_NAME, DEFAULT_MODEL
 from ..enums import ETimeSpan
 from ..game_players import (
-    BaseGamePlayer,
+    BaseGamePlayerRole,
     PlayerRoleRegistry,
     PlayerSideRegistry,
     VILLAGER_ROLE,
@@ -91,7 +91,7 @@ class GenerateSystemPromptInputForVote(BaseModel):
 def _player_vote(
     state: StateModel,
     timespan: ETimeSpan,
-    player: BaseGamePlayer,
+    player: BaseGamePlayerRole,
     generate_system_prompt: Callable[[GenerateSystemPromptInputForVote], str],
     chat_model: BaseChatModel | str = DEFAULT_MODEL,
     seed: int | None = None,
@@ -138,7 +138,7 @@ def _player_vote(
 
 
 def _create_run_vote_subgraph(
-    players: Iterable[BaseGamePlayer],
+    players: Iterable[BaseGamePlayerRole],
     timespan: ETimeSpan,
     prompt: Callable[[GeneratePromptInputForVote], str] | str,
     system_prompt: Callable[[GenerateSystemPromptInputForVote], str] | str = SYSTEM_PROMPT_TEMPLATE,  # noqa
@@ -220,7 +220,7 @@ def _create_run_vote_subgraph(
 
 
 def create_vote_daytime_vote_subgraph(
-    players: Iterable[BaseGamePlayer],
+    players: Iterable[BaseGamePlayerRole],
     prompt: Callable[[GeneratePromptInputForVote], str] | str = DAYTIME_VOTE_PROMPT_TEMPLATE,  # noqa
     system_prompt: Callable[[GenerateSystemPromptInputForVote], str] | str = SYSTEM_PROMPT_TEMPLATE,  # noqa
     chat_model: BaseChatModel | str = DEFAULT_MODEL,
@@ -247,7 +247,7 @@ def create_vote_daytime_vote_subgraph(
 
 
 def create_vote_night_vote_subgraph(
-    werewolves: Iterable[BaseGamePlayer],
+    werewolves: Iterable[BaseGamePlayerRole],
     prompt: Callable[[GeneratePromptInputForVote], str] | str = NIGHTTIME_VOTE_PROMPT_TEMPLATE,  # noqa
     system_prompt: Callable[[GenerateSystemPromptInputForVote], str] | str = SYSTEM_PROMPT_TEMPLATE,  # noqa
     chat_model: BaseChatModel | str = DEFAULT_MODEL,

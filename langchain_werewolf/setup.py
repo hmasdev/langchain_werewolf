@@ -31,6 +31,7 @@ from .enums import (
 )
 from .game_players import (
     BaseGamePlayer,
+    BaseGamePlayerRole,
     PlayerRoleRegistry,
     VILLAGER_ROLE,
     is_player_with_role,
@@ -107,7 +108,7 @@ def generate_players(
     seed: int = -1,
     player_input_interface: Callable[[str], Any] | EInputOutputType | None = None,  # noqa
     logger: Logger = getLogger(__name__),
-) -> list[BaseGamePlayer]:
+) -> list[BaseGamePlayerRole]:
 
     logger.info(f"n_players: {n_players}")
     logger.info(f"n_players_per_role: {n_players_by_role}")

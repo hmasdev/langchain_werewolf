@@ -8,7 +8,7 @@ from langchain_werewolf.game.night_action import (
     _player_act_in_night,
     GeneratePromptInputForNightAction,
 )
-from langchain_werewolf.game_players import BaseGamePlayer
+from langchain_werewolf.game_players import BaseGamePlayerRole
 from langchain_werewolf.game_players.player_roles import (
     FortuneTeller,
     Knight,
@@ -72,7 +72,7 @@ def test__master_ask_player_to_act_in_night() -> None:
     ]
 )
 def test__player_act_in_night(
-    player: BaseGamePlayer,
+    player: BaseGamePlayerRole,
     mocker: MockerFixture,
 ) -> None:
     # preparation

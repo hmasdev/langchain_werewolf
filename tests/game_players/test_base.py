@@ -1,5 +1,5 @@
 from operator import attrgetter
-from typing import Callable
+from typing import Callable, ClassVar
 from langchain_core.runnables import Runnable
 from pydantic import ValidationError
 import pytest
@@ -109,51 +109,51 @@ def test_BaseGamePlayerRole_enforce_attributes_implementation() -> None:
 
     # Positive test
     class WithRoleWithNightAction(BaseGamePlayerRole):
-        role: str = 'role'
-        night_action: str = 'night_action'
+        role: ClassVar[str] = 'role'
+        night_action: ClassVar[str] = 'night_action'
 
     # Negative test
     with pytest.raises(NotImplementedError):
         class WithRoleWithoutNightAction(BaseGamePlayerRole):
-            role: str = 'role'
+            role: ClassVar[str] = 'role'
 
     with pytest.raises(NotImplementedError):
         class WithoutRoleWithNightAction(BaseGamePlayerRole):
-            night_action: str = 'night_action'
+            night_action: ClassVar[str] = 'night_action'
 
     with pytest.raises(TypeError):
         class WithRoleWithInvalidNightAction(BaseGamePlayerRole):
-            role: str = 'role'
-            night_action: int = 1
+            role: ClassVar[str] = 'role'
+            night_action: ClassVar[int] = 1  # type: ignore
 
     with pytest.raises(TypeError):
         class WithInvalidRoleWithNightAction(BaseGamePlayerRole):
-            role: int = 1
-            night_action: str = 'night_action'
+            role: ClassVar[int] = 1  # type: ignore
+            night_action: ClassVar[str] = 'night_action'
 
 
 def test_BasePlayerSideMixin_enforce_attributes_implementation() -> None:
 
     # Positive test
     class WithPlayerSide(BasePlayerSideMixin):
-        side: str = 'side'
-        victory_condition: str = 'victory_condition'
+        side: ClassVar[str] = 'side'
+        victory_condition: ClassVar[str] = 'victory_condition'
 
     # Negative test
     with pytest.raises(NotImplementedError):
         class WithPlayerSideWithoutVictoryCondition(BasePlayerSideMixin):
-            side: str = 'side'
+            side: ClassVar[str] = 'side'
 
     with pytest.raises(NotImplementedError):
         class WithoutPlayerSideWithVictoryCondition(BasePlayerSideMixin):
-            victory_condition: str = 'victory_condition'
+            victory_condition: ClassVar[str] = 'victory_condition'
 
     with pytest.raises(TypeError):
         class WithPlayerSideWithInvalidVictoryCondition(BasePlayerSideMixin):
-            side: str = 'side'
-            victory_condition: int = 1
+            side: ClassVar[str] = 'side'
+            victory_condition: ClassVar[int] = 1  # type: ignore
 
     with pytest.raises(TypeError):
         class WithInvalidPlayerSideWithVictoryCondition(BasePlayerSideMixin):
-            side: int = 1
-            victory_condition: str = 'victory_condition'
+            side: ClassVar[int] = 1  # type: ignore
+            victory_condition: ClassVar[str] = 'victory_condition'

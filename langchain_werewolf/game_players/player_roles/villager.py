@@ -6,7 +6,7 @@ from ..registry import PlayerRoleRegistry
 
 
 @PlayerRoleRegistry.register
-class Villager(BaseGamePlayerRole, VillagerSideMixin, frozen=True):
+class Villager(BaseGamePlayerRole, VillagerSideMixin):
 
     role: ClassVar[str] = 'villager'
     night_action: ClassVar[str] = 'No night action'

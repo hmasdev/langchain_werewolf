@@ -1,4 +1,4 @@
-from .base import BaseGamePlayer
+from .base import BaseGamePlayer, BaseGamePlayerRole
 from .const import (
     VILLAGER_ROLE,
     VILLAGER_SIDE,
@@ -17,6 +17,7 @@ from .utils import (
 
 __all__ = [
     BaseGamePlayer.__name__,
+    BaseGamePlayerRole.__name__,
     PlayerSideRegistry.__name__,
     PlayerRoleRegistry.__name__,
     is_player_with_side.__name__,

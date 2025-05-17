@@ -3,9 +3,9 @@ from langchain_core.runnables import RunnableLambda
 import pytest
 from langchain_werewolf.const import GAME_MASTER_NAME
 from langchain_werewolf.game_players import (
-    BaseGamePlayer,
+    BaseGamePlayerRole,
     PlayerRoleRegistry,
-    is_player_with_role,
+    is_player_with_side,
 )
 from langchain_werewolf.game_players.player_roles import (
     FortuneTeller,
@@ -40,9 +40,9 @@ def test__announce_game_rule() -> None:
             for idx, role_exp in enumerate({
                 ROLE_EXPLANATION_TEMPLATE.format(
                     role=player.role,
-                    side=player.side,
-                    victory_condition=player.victory_condition,
                     night_action=player.night_action,
+                    side=is_player_with_side(player) and player.side,
+                    victory_condition=is_player_with_side(player) and player.victory_condition,  # noqa
                 )
                 for player in players
             })
@@ -51,7 +51,6 @@ def test__announce_game_rule() -> None:
             Counter([
                 player.role
                 for player in players
-                if is_player_with_role(player)
             ])
         )
     )
@@ -75,14 +74,14 @@ def test__announce_game_rule() -> None:
         PlayerRoleRegistry.create_player(name=f'player3', key=FortuneTeller.role, runnable=RunnableLambda(str)),  # noqa
     ]
 )
-def test__announce_role(player: BaseGamePlayer) -> None:
+def test__announce_role(player: BaseGamePlayerRole) -> None:
     # preparation
     state = StateModel(alive_players_names=[player.name])
     expected_message = ROLE_ANNOUNCE_TEMPLATE.format(
         role=player.role,
-        side=player.side,
-        victory_condition=player.victory_condition,
         night_action=player.night_action,
+        side=is_player_with_side(player) and player.side,
+        victory_condition=is_player_with_side(player) and player.victory_condition,  # noqa
     )
     # execution
     actual = _announce_role(state, player, ROLE_ANNOUNCE_TEMPLATE)

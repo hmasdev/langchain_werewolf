@@ -5,8 +5,7 @@ from langgraph.graph import Graph, StateGraph, START, END
 from ..const import GAME_MASTER_NAME
 from ..enums import EResult
 from ..game_players import (
-    BaseGamePlayer,
-    is_player_with_role,
+    BaseGamePlayerRole,
     is_werewolf_role,
 )
 from ..models.state import (
@@ -33,7 +32,7 @@ REVEAL_ALL_PLAYER_ROLES_MESSAGE_TEMPLATE: str = '''The roles of the players are 
 
 def check_victory_condition(
     state: StateModel,
-    players: Iterable[BaseGamePlayer],
+    players: Iterable[BaseGamePlayerRole],
 ) -> dict[str, EResult | None]:
     alive_players = [p for p in players if p.name in state.alive_players_names]  # noqa
     n_alive_players: int = len(state.alive_players_names)
@@ -52,7 +51,7 @@ def check_victory_condition(
 
 
 def create_check_victory_condition_subgraph(
-    players: Iterable[BaseGamePlayer],
+    players: Iterable[BaseGamePlayerRole],
     *,
     echo_targets: list[Literal[  # type: ignore
         CHECK_VICTORY_CONDITION_TEARUP_NODE_NAME,  # type: ignore
@@ -95,7 +94,7 @@ def create_check_victory_condition_subgraph(
                 roles='\n'.join([
                     PLAYER_ROLE_MESSAGE_TEMPLATE.format(
                         name=player.name,
-                        role=is_player_with_role(player) and player.role,  # NOTE: is_player_with_xxx is used for type guard # FIXME # noqa
+                        role=player.role,
                         state=(
                             'Alive'
                             if player.name in state.alive_players_names else

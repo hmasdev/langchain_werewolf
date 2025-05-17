@@ -1,3 +1,4 @@
+from langchain_core.runnables import RunnableLambda
 import pytest
 
 from langchain_werewolf.game_players.base import (
@@ -22,14 +23,14 @@ from langchain_werewolf.game_players.utils import (
 @pytest.mark.parametrize(
     "player,expected",
     [
-        (Villager(name="Alice", runnable=lambda _: "hello"), False),
-        (Werewolf(name="Bob", runnable=lambda _: "hello"), True),
-        (BaseGamePlayer(name="Charlie", runnable=lambda _: "hello"), False),
-        (BaseGamePlayerRole(name="Charlie", runnable=lambda _: "hello"), False),  # noqa
+        (Villager(name="Alice", runnable=RunnableLambda(lambda _: "hello")), False),  # noqa
+        (Werewolf(name="Bob", runnable=RunnableLambda(lambda _: "hello")), True),  # noqa
+        (BaseGamePlayer(name="Charlie", runnable=RunnableLambda(lambda _: "hello")), False),  # noqa
+        (BaseGamePlayerRole(name="Charlie", runnable=RunnableLambda(lambda _: "hello")), False),  # noqa
         (BasePlayerSideMixin(), False),
         (VillagerSideMixin(), False),
         (WerewolfSideMixin(), False),
-        (type("InheritedWerewolf", (Werewolf,), {})(name="Dave", runnable=lambda _: "hello"), True),  # noqa
+        (type("InheritedWerewolf", (Werewolf,), {})(name="Dave", runnable=RunnableLambda(lambda _: "hello")), True),  # noqa
     ]
 )
 def test_is_werewolf_role(
@@ -42,18 +43,18 @@ def test_is_werewolf_role(
 @pytest.mark.parametrize(
     "player,expected",
     [
-        (Villager(name="Alice", runnable=lambda _: "hello"), False),
-        (Werewolf(name="Bob", runnable=lambda _: "hello"), True),
-        (BaseGamePlayer(name="Charlie", runnable=lambda _: "hello"), False),
-        (BaseGamePlayerRole(name="Charlie", runnable=lambda _: "hello"), False),  # noqa
+        (Villager(name="Alice", runnable=RunnableLambda(lambda _: "hello")), False),  # noqa
+        (Werewolf(name="Bob", runnable=RunnableLambda(lambda _: "hello")), True),  # noqa
+        (BaseGamePlayer(name="Charlie", runnable=RunnableLambda(lambda _: "hello")), False),  # noqa
+        (BaseGamePlayerRole(name="Charlie", runnable=RunnableLambda(lambda _: "hello")), False),  # noqa
         (BasePlayerSideMixin(), False),
         (VillagerSideMixin(), False),
         (WerewolfSideMixin(), True),
-        (type("InheritedWerewolf", (Werewolf,), {})(name="Dave", runnable=lambda _: "hello"), True),  # noqa
+        (type("InheritedWerewolf", (Werewolf,), {})(name="Dave", runnable=RunnableLambda(lambda _: "hello")), True),  # noqa
     ]
 )
 def test_is_werewolf_side(
-    player: BaseGamePlayer,
+    player: BasePlayerSideMixin,
     expected: bool,
 ) -> None:
     assert is_werewolf_side(player) == expected
@@ -62,14 +63,14 @@ def test_is_werewolf_side(
 @pytest.mark.parametrize(
     "player,expected",
     [
-        (Villager(name="Alice", runnable=lambda _: "hello"), True),
-        (Werewolf(name="Bob", runnable=lambda _: "hello"), True),
-        (BaseGamePlayer(name="Charlie", runnable=lambda _: "hello"), False),
-        (BaseGamePlayerRole(name="Charlie", runnable=lambda _: "hello"), False),  # noqa
+        (Villager(name="Alice", runnable=RunnableLambda(lambda _: "hello")), True),  # noqa
+        (Werewolf(name="Bob", runnable=RunnableLambda(lambda _: "hello")), True),  # noqa
+        (BaseGamePlayer(name="Charlie", runnable=RunnableLambda(lambda _: "hello")), False),  # noqa
+        (BaseGamePlayerRole(name="Charlie", runnable=RunnableLambda(lambda _: "hello")), False),  # noqa
         (BasePlayerSideMixin(), True),
         (VillagerSideMixin(), True),
         (WerewolfSideMixin(), True),
-        (type("InheritedWerewolf", (Werewolf,), {})(name="Dave", runnable=lambda _: "hello"), True),  # noqa
+        (type("InheritedWerewolf", (Werewolf,), {})(name="Dave", runnable=RunnableLambda(lambda _: "hello")), True),  # noqa
     ]
 )
 def test_is_player_with_side(
@@ -82,14 +83,15 @@ def test_is_player_with_side(
 @pytest.mark.parametrize(
     "player,expected",
     [
-        (Villager(name="Alice", runnable=lambda _: "hello"), True),
-        (Werewolf(name="Bob", runnable=lambda _: "hello"), True),
-        (BaseGamePlayer(name="Charlie", runnable=lambda _: "hello"), False),
-        (BaseGamePlayerRole(name="Charlie", runnable=lambda _: "hello"), True),
+        (Villager(name="Alice", runnable=RunnableLambda(lambda _: "hello")), True),  # noqa
+        (Werewolf(name="Bob", runnable=RunnableLambda(lambda _: "hello")), True),  # noqa
+        (BaseGamePlayer(name="Charlie", runnable=RunnableLambda(lambda _: "hello")), False),  # noqa
+        (BaseGamePlayerRole(name="Charlie",
+         runnable=RunnableLambda(lambda _: "hello")), True),
         (BasePlayerSideMixin(), False),
         (VillagerSideMixin(), False),
         (WerewolfSideMixin(), False),
-        (type("InheritedWerewolf", (Werewolf,), {})(name="Dave", runnable=lambda _: "hello"), True),  # noqa
+        (type("InheritedWerewolf", (Werewolf,), {})(name="Dave", runnable=RunnableLambda(lambda _: "hello")), True),  # noqa
     ]
 )
 def test_is_player_with_role(
@@ -102,14 +104,14 @@ def test_is_player_with_role(
 @pytest.mark.parametrize(
     "player,expected",
     [
-        (Villager(name="Alice", runnable=lambda _: "hello"), True),
-        (Werewolf(name="Bob", runnable=lambda _: "hello"), True),
-        (BaseGamePlayer(name="Charlie", runnable=lambda _: "hello"), False),
-        (BaseGamePlayerRole(name="Charlie", runnable=lambda _: "hello"), False),  # noqa
+        (Villager(name="Alice", runnable=RunnableLambda(lambda _: "hello")), True),  # noqa
+        (Werewolf(name="Bob", runnable=RunnableLambda(lambda _: "hello")), True),  # noqa
+        (BaseGamePlayer(name="Charlie", runnable=RunnableLambda(lambda _: "hello")), False),  # noqa
+        (BaseGamePlayerRole(name="Charlie", runnable=RunnableLambda(lambda _: "hello")), False),  # noqa
         (BasePlayerSideMixin(), False),
         (VillagerSideMixin(), False),
         (WerewolfSideMixin(), False),
-        (type("InheritedWerewolf", (Werewolf,), {})(name="Dave", runnable=lambda _: "hello"), True),  # noqa
+        (type("InheritedWerewolf", (Werewolf,), {})(name="Dave", runnable=RunnableLambda(lambda _: "hello")), True),  # noqa
     ]
 )
 def test_is_valid_game_player(

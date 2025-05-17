@@ -14,7 +14,7 @@ from ...models.state import (
 
 
 @PlayerRoleRegistry.register
-class Knight(BaseGamePlayerRole, VillagerSideMixin, frozen=True):
+class Knight(BaseGamePlayerRole, VillagerSideMixin):
 
     role: ClassVar[str] = 'knight'
     night_action: ClassVar[str] = 'Save a player from the werewolves'

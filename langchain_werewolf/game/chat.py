@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field
 
 from ..const import GAME_MASTER_NAME
 from ..enums import ESpeakerSelectionMethod
-from ..game_players import BaseGamePlayer
+from ..game_players import BaseGamePlayerRole
 from ..models.state import (
     ChatHistoryModel,
     StateModel,
@@ -86,7 +86,7 @@ class GenerateSystemPromptInputForChat(BaseModel):
 
 def _player_speak(
     state: StateModel,
-    players: Iterable[BaseGamePlayer],
+    players: Iterable[BaseGamePlayerRole],
     participants: Iterable[str],
     generate_system_prompt: Callable[[GenerateSystemPromptInputForChat], str],
 ) -> dict[str, dict[frozenset[str], ChatHistoryModel]]:
@@ -116,7 +116,7 @@ def _player_speak(
 
 def _tearup_chat(
     state: StateModel,
-    players: Iterable[BaseGamePlayer],
+    players: Iterable[BaseGamePlayerRole],
     generate_prompt: Callable[[GeneratePromptInputForChat], str],
     n_turns_per_day: int,
 ) -> dict[str, object]:  # type: ignore
@@ -137,7 +137,7 @@ def _tearup_chat(
 
 
 def create_run_chat_subbraph(
-    players: Iterable[BaseGamePlayer],
+    players: Iterable[BaseGamePlayerRole],
     prompt: Callable[[GeneratePromptInputForChat], str] | str,
     system_prompt: Callable[[GenerateSystemPromptInputForChat], str] | str = SYSTEM_PROMPT_TEMPLATE,  # noqa
     select_speaker: Callable[[Iterable[str]], Generator[str, None, None]] | type[cycle] | ESpeakerSelectionMethod = ESpeakerSelectionMethod.round_robin,  # noqa
@@ -225,7 +225,7 @@ def create_run_chat_subbraph(
 
 
 def create_run_daytime_chat_subgraph(
-    players: Iterable[BaseGamePlayer],
+    players: Iterable[BaseGamePlayerRole],
     prompt: Callable[[GeneratePromptInputForChat], str] | str = DAYTIME_DISCUSSION_PROMPT_TEMPLATE,  # noqa
     system_prompt: Callable[[GenerateSystemPromptInputForChat], str] | str = SYSTEM_PROMPT_TEMPLATE,  # noqa
     select_speaker: Callable[[Iterable[str]], Generator[str, None, None]] | ESpeakerSelectionMethod = ESpeakerSelectionMethod.round_robin,  # noqa
@@ -255,7 +255,7 @@ def create_run_daytime_chat_subgraph(
 
 
 def create_run_nighttime_chat_subgraph(
-    werewolves: Iterable[BaseGamePlayer],
+    werewolves: Iterable[BaseGamePlayerRole],
     prompt: Callable[[GeneratePromptInputForChat], str] | str = NIGHTTIME_DISCUSSION_PROMPT_TEMPLATE,  # noqa
     system_prompt: Callable[[GenerateSystemPromptInputForChat], str] | str = SYSTEM_PROMPT_TEMPLATE,  # noqa
     select_speaker: Callable[[Iterable[str]], Generator[str, None, None]] | ESpeakerSelectionMethod = ESpeakerSelectionMethod.round_robin,  # noqa

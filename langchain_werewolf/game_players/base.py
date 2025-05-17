@@ -28,8 +28,8 @@ class GamePlayerRunnableInputModel(BaseModel):
     system_prompt: str | None = Field(default=None, title="the system prompt to generate the message")  # noqa
 
 
-class BaseGamePlayer(BaseModel, frozen=True):
-    model_config = ConfigDict(arbitrary_types_allowed=True)
+class BaseGamePlayer(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True, frozen=True)
 
     name: str = Field(..., title="the name of the player")
     runnable: SkipValidation[Runnable[GamePlayerRunnableInputModel, str]] = Field(  # noqa
@@ -178,7 +178,7 @@ class BasePlayerSideMixin:
         Raises:
             NotImplementedError: if the class does not implement side or victory_condition
             TypeError: if the class does not implement side or victory_condition as str
-        """  # noqa
+        """  # noqa\
         super().__init_subclass__()
         if not hasattr(cls, 'side'):
             raise NotImplementedError(f"The class `{cls.__name__}` should implement the `side` attribute")  # noqa
@@ -189,5 +189,5 @@ class BasePlayerSideMixin:
         if not isinstance(cls.victory_condition, str):
             raise TypeError(f"The class `{cls.__name__}` should implement the `victory_condition` attribute as str")  # noqa
 
-    side: str
-    victory_condition: str
+    side: ClassVar[str]
+    victory_condition: ClassVar[str]

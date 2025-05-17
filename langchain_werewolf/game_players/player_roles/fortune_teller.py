@@ -17,13 +17,13 @@ from ...utils import find_player_by_name
 
 
 @PlayerRoleRegistry.register
-class FortuneTeller(BaseGamePlayerRole, VillagerSideMixin, frozen=True):
+class FortuneTeller(BaseGamePlayerRole, VillagerSideMixin):
 
     role: ClassVar[str] = 'fortuneteller'
     night_action: ClassVar[str] = 'Check whether a player is a werewolf or not'  # noqa
 
     question_to_decide_night_action: str = Field(
-        'Who do you want to check whether he/she is a werewolf or not?',
+        default='Who do you want to check whether he/she is a werewolf or not?',  # noqa
         title="the question to decide the night action of the player",
     )
 

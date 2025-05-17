@@ -87,7 +87,7 @@ class PlayerSideRegistry:
         raise ValueError(f"The side {side_class} is not registered.")
 
     @classmethod
-    def initialize(cls) -> "PlayerSideRegistry":
+    def initialize(cls) -> type["PlayerSideRegistry"]:
         """
         Initialize the registry with all sides in the following module registered:
             `langchain_werewolf.game_players.player_sides`
@@ -118,7 +118,7 @@ class PlayerRoleRegistry:
         return role_class
 
     @classmethod
-    def unregister(cls, role_class: type[BasePlayerSideMixin]) -> None:
+    def unregister(cls, role_class: type[BaseGamePlayerRole]) -> None:
         """Unregister a role class
         Args:
             role_class (type[BasePlayerSideMixin]): the class of the role
@@ -192,7 +192,7 @@ class PlayerRoleRegistry:
             raise KeyError(f"The role {key} is not registered.")
 
     @classmethod
-    def initialize(cls) -> "PlayerRoleRegistry":
+    def initialize(cls) -> type["PlayerRoleRegistry"]:
         """
         Initialize the registry with all roles in the following module registered:
             `langchain_werewolf.game_players.player_roles`

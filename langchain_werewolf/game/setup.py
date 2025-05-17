@@ -5,8 +5,7 @@ from langchain_core.runnables import Runnable
 from langgraph.graph import Graph, StateGraph, START, END
 from ..const import GAME_MASTER_NAME, PACKAGE_NAME
 from ..game_players import (
-    BaseGamePlayer,
-    is_player_with_role,
+    BaseGamePlayerRole,
     is_player_with_side,
 )
 from ..models.state import (
@@ -64,18 +63,18 @@ How will you behave in order to enable your team({side}) to win the game?
 
 def _announce_game_rule(
     state: StateModel,
-    players: Iterable[BaseGamePlayer],
+    players: Iterable[BaseGamePlayerRole],
     game_rule_template: str,
     role_explanation_template: str,
 ) -> dict[str, dict[frozenset[str], ChatHistoryModel]]:
 
     roles_explanation = {
         role_explanation_template.format(
-            role=is_player_with_role(player) and player.role,  # noqa
+            role=player.role,
+            night_action=player.night_action,
             side=is_player_with_side(player) and player.side,  # noqa
             victory_condition=is_player_with_side(player) and player.victory_condition,  # noqa
-            night_action=is_player_with_role(player) and player.night_action,
-            # NOTE: is_player_with_xxx is used for type guard # FIXME
+            # NOTE: is_player_with_side is used for type guard # FIXME
         )
         for player in players
     }
@@ -93,7 +92,6 @@ def _announce_game_rule(
                 Counter([
                     player.role
                     for player in players
-                    if is_player_with_role(player)
                 ])
             )
         ),
@@ -102,24 +100,24 @@ def _announce_game_rule(
 
 def _announce_role(
     state: StateModel,
-    player: BaseGamePlayer,
+    player: BaseGamePlayerRole,
     role_announce_template: str,
 ) -> dict[str, dict[frozenset[str], ChatHistoryModel]]:
     return create_dict_to_record_chat(
         sender=GAME_MASTER_NAME,
         participants=[player.name, GAME_MASTER_NAME],
         message=role_announce_template.format(
-            role=is_player_with_role(player) and player.role,
+            role=player.role,
             side=is_player_with_side(player) and player.side,
             victory_condition=is_player_with_side(player) and player.victory_condition,  # noqa
-            night_action=is_player_with_role(player) and player.night_action,  # noqa
+            night_action=player.night_action,  # noqa
             # NOTE: is_player_with_xxx is used for type guard # FIXME
         ),
     )
 
 
 def create_game_preparation_graph(
-    players: Iterable[BaseGamePlayer],
+    players: Iterable[BaseGamePlayerRole],
     game_rule_template: str = GAME_RULE_TEMPLATE,
     role_explanation_template: str = ROLE_EXPLANATION_TEMPLATE,
     role_announce_template: str = ROLE_ANNOUNCE_TEMPLATE,

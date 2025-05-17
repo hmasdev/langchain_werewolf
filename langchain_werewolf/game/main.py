@@ -5,7 +5,7 @@ from langgraph.graph import Graph, StateGraph, START, END
 from langgraph.graph.graph import CompiledGraph
 from ..enums import ETimeSpan
 from ..game_players import (
-    BaseGamePlayer,
+    BaseGamePlayerRole,
     is_werewolf_role,
 )
 from ..models.state import (
@@ -24,7 +24,7 @@ from .vote import create_vote_daytime_vote_subgraph, create_vote_night_vote_subg
 
 
 def create_game_graph(
-    players: Iterable[BaseGamePlayer],
+    players: Iterable[BaseGamePlayerRole],
     preparation_kwargs: dict[str, object] = {},
     check_victory_condition_kwargs: dict[str, object] = {},
     check_victory_condition_before_daytime_kwargs: dict[str, object] = {},
