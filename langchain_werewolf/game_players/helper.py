@@ -7,13 +7,9 @@ from langchain_core.runnables import (
     RunnableLambda,
     RunnablePassthrough,
 )
-from .base import GamePlayerRunnableInputModel, BaseGamePlayer
+from .base import GamePlayerRunnableInputModel
 from .utils import is_werewolf_role
-from ..models.state import (
-    MsgModel,
-    StateModel,
-    get_related_chat_histories,
-)
+from ..models.state import MsgModel
 
 runnable_str2game_player_runnable_input: Runnable[
     str,
@@ -86,31 +82,3 @@ def generate_game_player_runnable(
         return _generate_game_player_runnable_based_on_runnable_lambda(chatmodel_or_runnable)  # noqa
     else:
         raise ValueError(f'chatmodel_or_runnable must be either a BaseChatModel or a Runnable[str, str] but {chatmodel_or_runnable}')  # noqa
-
-
-def filter_state_according_to_player(
-    player: BaseGamePlayer,
-    state: StateModel,
-) -> StateModel:
-    return StateModel(
-        # NOTE: get the chat histories related to the player
-        chat_state=get_related_chat_histories(player.name, state),
-        # NOTE: safe players are not revealed to the player
-        # TODO: reveal the safe player saved by a knight to the knight
-        safe_players_names=set(),
-        # NOTE: nighttime votes are only revealed to werewolves
-        nighttime_votes_history=(
-            state.nighttime_votes_history
-            if is_werewolf_role(player)
-            else []
-        ),
-        result=state.result,
-        **state.model_dump(
-            exclude={
-                'chat_state',
-                'safe_players_names',
-                'nighttime_votes_history',
-                'result',
-            }
-        ),
-    )

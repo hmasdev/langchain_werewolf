@@ -2,6 +2,7 @@ from typing import Iterable, TypeGuard
 
 from .base import BaseGamePlayer, BaseGamePlayerRole, BasePlayerSideMixin
 from .const import WEREWOLF_ROLE, WEREWOLF_SIDE
+from ..models.state import StateModel, get_related_chat_histories
 from .registry import PlayerRoleRegistry, PlayerSideRegistry
 from ..utils import assert_not_empty_deco
 
@@ -168,3 +169,31 @@ def find_players_by_side(
         for player in players
         if isinstance(player, side_cls)
     ]
+
+
+def filter_state_according_to_player(
+    player: BaseGamePlayer,
+    state: StateModel,
+) -> StateModel:
+    return StateModel(
+        # NOTE: get the chat histories related to the player
+        chat_state=get_related_chat_histories(player.name, state),
+        # NOTE: safe players are not revealed to the player
+        # TODO: reveal the safe player saved by a knight to the knight
+        safe_players_names=set(),
+        # NOTE: nighttime votes are only revealed to werewolves
+        nighttime_votes_history=(
+            state.nighttime_votes_history
+            if is_werewolf_role(player)
+            else []
+        ),
+        result=state.result,
+        **state.model_dump(
+            exclude={
+                'chat_state',
+                'safe_players_names',
+                'nighttime_votes_history',
+                'result',
+            }
+        ),
+    )
