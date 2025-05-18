@@ -59,7 +59,7 @@ def _master_ask_player_to_act_in_night(
             GeneratePromptInputForNightAction(
                 role=player.role,
                 night_action=player.night_action,
-                question_to_decide_night_action=player.question_to_decide_night_action if hasattr(player, "question_to_decide_night_action") else '',  # FIXME # noqa
+                question_to_decide_night_action=getattr(player, "question_to_decide_night_action", ''),  # noqa
                 alive_players_names=state.alive_players_names,
             ),
         ),
