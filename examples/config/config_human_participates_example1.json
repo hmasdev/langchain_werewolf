@@ -22,7 +22,8 @@
         {
             "name": "Me",
             "player_input_interface": "click",
-            "player_output_interface": "click"
+            "player_output_interface": "click",
+            "language": "Japanese"
         }
     ]
 }
