@@ -122,7 +122,10 @@ def _tearup_chat(
 ) -> dict[str, object]:  # type: ignore
     return (  # type: ignore
         create_dict_to_update_chat_remaining_number(
-            len(state.alive_players_names)*n_turns_per_day
+            len([
+                p for p in players
+                if p.name in state.alive_players_names
+            ]) * n_turns_per_day
         )
         | create_dict_to_record_chat(
             sender=GAME_MASTER_NAME,
