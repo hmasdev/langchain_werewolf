@@ -13,7 +13,10 @@ load_dotenv()
 
 def test_knight_act_in_night(mocker: MockerFixture) -> None:
     # mock
-    mocker.patch("langchain_werewolf.game_players.player_roles.knight.extract_name", lambda msg, *args, **kwargs: msg)  # noqa
+    extract_name_mock = mocker.patch(
+        "langchain_werewolf.game_players.player_roles.knight.extract_name",
+        mocker.Mock(side_effect=lambda msg, *args, **kwargs: msg),
+    )
     # preparation
     expected_name = 'Player0'
     player = Knight(
@@ -27,13 +30,10 @@ def test_knight_act_in_night(mocker: MockerFixture) -> None:
         )
         for i in range(10)
     ]
+    state = StateModel(alive_players_names=[player.name]+[p.name for p in players])  # noqa
     expected = f'I decided to save {expected_name} in this night.'
     # execution
-    actual = player.act_in_night(
-        [player, *players],
-        [],
-        StateModel(alive_players_names=[player.name]+[p.name for p in players]),  # noqa
-    )
+    actual = player.act_in_night([player, *players], [], state)
     # assert
     assert actual['safe_players_names'] == {expected_name}
     assert actual['chat_state']
@@ -41,6 +41,12 @@ def test_knight_act_in_night(mocker: MockerFixture) -> None:
     assert actual['chat_state'][frozenset({player.name, GAME_MASTER_NAME})].messages  # type: ignore # noqa
     assert actual['chat_state'][frozenset({player.name, GAME_MASTER_NAME})].messages[0].value.name == player.name  # type: ignore # noqa
     assert actual['chat_state'][frozenset({player.name, GAME_MASTER_NAME})].messages[0].value.message == expected  # type: ignore # noqa
+    extract_name_mock.assert_called_once_with(
+        expected_name,
+        [p.name for p in players if p.name in state.alive_players_names and p in players],  # noqa
+        context=f'Extract the valid name of the player as the answer to "{player.question_to_decide_night_action}"',  # noqa
+        chat_model=player.runnable,
+    )
 
 
 @pytest.mark.integration
