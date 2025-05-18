@@ -7,11 +7,12 @@ from langchain_core.runnables import (
     RunnablePassthrough,
 )
 from .enums import EInputOutputType
+from .utils import delay_deco
 
 
 def attach_prefix_to_prompt(
     input_func: Callable[[str], Any],
-    prefix: str = ">>> ",
+    prefix: str = "",
 ) -> Callable[[str], Any]:
 
     def wrapped_input_func(prompt: str, *args, **kwargs) -> Any:
@@ -23,8 +24,9 @@ def attach_prefix_to_prompt(
 
 _input_map: dict[EInputOutputType, Callable[[str], Any]] = {
     EInputOutputType.none: lambda _: None,
-    EInputOutputType.standard: attach_prefix_to_prompt(input),
-    EInputOutputType.click: attach_prefix_to_prompt(click.prompt),
+    EInputOutputType.standard: delay_deco(attach_prefix_to_prompt(input), seconds=2),
+    EInputOutputType.click: delay_deco(attach_prefix_to_prompt(click.prompt), seconds=2),
+    # FIXME: fix the above `delay_deco`. This is a patch to avoid the conflict between the output and the input prompt.  # noqa
 }
 
 _output_map: dict[EInputOutputType, Callable[[Any], None]] = {

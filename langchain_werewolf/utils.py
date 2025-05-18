@@ -1,12 +1,21 @@
 from copy import deepcopy
-from functools import wraps
+from functools import partial, wraps
 import random
-from typing import Callable, Generator, Iterable, Sized, TypeVar
+import time
+from typing import (
+    Callable,
+    Generator,
+    Iterable,
+    ParamSpec,
+    Sized,
+    TypeVar,
+    overload,
+)
 
 from pydantic import BaseModel
 import pydantic_core
 
-
+P = ParamSpec('P')
 T = TypeVar('T')
 PydanticBaseModel = TypeVar('PydanticBaseModel', bound=BaseModel)
 
@@ -103,3 +112,61 @@ def load_json(
     return Model.model_validate(
         pydantic_core.from_json(contents, allow_partial=True),
     )
+
+
+@overload
+def delay_deco(
+    func: Callable[P, T],
+    seconds: float = 1,
+) -> Callable[P, T]:
+    """A decorator to delay the execution of a function
+
+    Args:
+        func (Callable[P, T]): the function to be decorated
+        seconds (float, optional): the delay in seconds. Defaults to 1.
+    Returns:
+        Callable[P, T]: the decorated function
+    """
+    ...
+
+
+@overload
+def delay_deco(
+    func: None = None,
+    seconds: float = 1,
+) -> Callable[[Callable[P, T]], Callable[P, T]]:
+    """A decorator to delay the execution of a function
+    Args:
+        func (None, optional): the function to be decorated. Defaults to None.
+        seconds (float, optional): the delay in seconds. Defaults to 1.
+    Returns:
+        Callable[[Callable[P, T]], Callable[P, T]]: a decorator
+    """
+    ...
+
+
+def delay_deco(
+    func: Callable[P, T] | None = None,
+    seconds: float = 1,
+) -> Callable[[Callable[P, T]], Callable[P, T]] | Callable[P, T]:
+    """A decorator to delay the execution of a function
+
+    Args:
+        func (Callable[P, T] | None, optional): the function to be decorated. Defaults to None.
+        seconds (float, optional): the delay in seconds. Defaults to 1.
+
+    Returns:
+        Callable[[Callable[P, T]], Callable[P, T]] | Callable[P, T]: the decorated function
+
+    Notes:
+        - If `func` is None, a deorator is returned. Otherwise, the decorated function is returned.
+    """
+
+    if func is None:
+        return partial(delay_deco, seconds=seconds)
+
+    @wraps(func)
+    def wrapper(*args, **kwargs) -> T:
+        time.sleep(seconds)
+        return func(*args, **kwargs)
+    return wrapper
