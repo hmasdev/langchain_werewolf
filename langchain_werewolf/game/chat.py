@@ -277,9 +277,9 @@ def create_run_nighttime_chat_subgraph(
     display: Callable[[StateModel], None] | Runnable[StateModel, None] | None = None,  # noqa
 ) -> Graph:
     # Check if `werewolves` contains only werewolf players
-    for player in werewolves:
-        if player.role != ERole.Werewolf:
-            raise ValueError(f"Player '{player.name}' is not a werewolf but participates in the nighttime chat.")  # noqa
+    invalid_players = [player.name for player in werewolves if player.role != ERole.Werewolf]
+    if invalid_players:
+        raise ValueError(f"The following players are not werewolves but participate in the nighttime chat: {', '.join(invalid_players)}.")  # noqa
 
     return create_run_chat_subbraph(
         werewolves,
