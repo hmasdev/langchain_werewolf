@@ -162,7 +162,7 @@ def delay_deco(
             the decorated function
 
     Notes:
-        - If `func` is None, a deorator is returned.
+        - If `func` is None, a decorator is returned.
           Otherwise, the decorated function is returned.
     """
 
