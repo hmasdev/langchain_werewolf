@@ -7,7 +7,7 @@ from langgraph.graph import END, START, Graph, StateGraph
 from pydantic import BaseModel, Field
 
 from ..const import GAME_MASTER_NAME
-from ..enums import ESpeakerSelectionMethod
+from ..enums import ERole, ESpeakerSelectionMethod
 from ..game_players.base import BaseGamePlayer
 from ..models.state import (
     ChatHistoryModel,
@@ -273,6 +273,11 @@ def create_run_nighttime_chat_subgraph(
     ],
     display: Callable[[StateModel], None] | Runnable[StateModel, None] | None = None,  # noqa
 ) -> Graph:
+    # Check if `werewolves` contains only werewolf players
+    for player in werewolves:
+        if player.role != ERole.Werewolf:
+            raise ValueError(f"Player '{player.name}' is not a werewolf but participates in the nighttime chat.")  # noqa
+
     return create_run_chat_subbraph(
         werewolves,
         prompt,
