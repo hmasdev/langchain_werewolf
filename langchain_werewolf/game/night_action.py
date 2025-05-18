@@ -4,8 +4,10 @@ from langchain_core.runnables import Runnable
 from langgraph.graph import Graph, StateGraph, START, END
 from pydantic import BaseModel, Field
 from ..const import GAME_MASTER_NAME
-from ..enums import ERole
-from ..game_players.base import BaseGamePlayer
+from ..game_players import (
+    BaseGamePlayerRole,
+    is_werewolf_role,
+)
 from ..game_players.helper import filter_state_according_to_player
 from ..models.state import (
     ChatHistoryModel,
@@ -47,7 +49,7 @@ class GeneratePromptInputForNightAction(BaseModel):
 
 def _master_ask_player_to_act_in_night(
     state: StateModel,
-    player: BaseGamePlayer,
+    player: BaseGamePlayerRole,
     generate_prompt: Callable[[GeneratePromptInputForNightAction], str],
 ) -> dict[str, dict[frozenset[str], ChatHistoryModel]]:
     return create_dict_to_record_chat(
@@ -55,9 +57,9 @@ def _master_ask_player_to_act_in_night(
         participants=[player.name, GAME_MASTER_NAME],
         message=generate_prompt(
             GeneratePromptInputForNightAction(
-                role=player.role.value,
-                night_action=player.night_action or '',
-                question_to_decide_night_action=player.question_to_decide_night_action or '',  # noqa
+                role=player.role,
+                night_action=player.night_action,
+                question_to_decide_night_action=getattr(player, "question_to_decide_night_action", ''),  # noqa
                 alive_players_names=state.alive_players_names,
             ),
         ),
@@ -66,8 +68,8 @@ def _master_ask_player_to_act_in_night(
 
 def _player_act_in_night(
     state: StateModel,
-    player: BaseGamePlayer,
-    players: Iterable[BaseGamePlayer],
+    player: BaseGamePlayerRole,
+    players: Iterable[BaseGamePlayerRole],
 ) -> dict[str, object]:
     return create_dict_without_state_updated(state) | player.act_in_night(
         players,
@@ -78,11 +80,11 @@ def _player_act_in_night(
 
 def _skip_player_act_in_night(
     state: StateModel,
-    player: BaseGamePlayer,
+    player: BaseGamePlayerRole,
     not_skip_destination_node_namd: str,
     skip_destination_node_name: str,
 ) -> str:
-    if player.role == ERole.Werewolf:
+    if is_werewolf_role(player):
         return skip_destination_node_name
     if player.name not in state.alive_players_names:
         return skip_destination_node_name
@@ -90,7 +92,7 @@ def _skip_player_act_in_night(
 
 
 def create_villagers_night_action_subgraph(
-    players: Iterable[BaseGamePlayer],
+    players: Iterable[BaseGamePlayerRole],
     prompt: Callable[[GeneratePromptInputForNightAction], str] | str = TEMPLATE_FOR_NIGHT_ACTION_TEMPLATE,  # noqa
     *,
     echo_targets: list[Literal[  # type: ignore

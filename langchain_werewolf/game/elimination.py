@@ -4,7 +4,7 @@ from langchain_core.runnables import Runnable
 from langgraph.graph import Graph, StateGraph, START, END
 from ..const import GAME_MASTER_NAME
 from ..enums import ETimeSpan
-from ..game_players.base import BaseGamePlayer
+from ..game_players import BaseGamePlayerRole
 from ..models.state import (
     StateModel,
     create_dict_to_record_chat,
@@ -75,7 +75,7 @@ def _eliminate_player(
 
 
 def create_elimination_subgraph(
-    players: Iterable[BaseGamePlayer],
+    players: Iterable[BaseGamePlayerRole],
     *,
     echo_targets: list[Literal[  # type: ignore
         ANNOUNCE_NODE_NAME_DAYTIME,  # type: ignore

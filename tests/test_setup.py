@@ -11,14 +11,19 @@ from langchain_werewolf.const import (
 )
 from langchain_werewolf.enums import (
     EInputOutputType,
-    ERole,
     ESystemOutputType,
     ETimeSpan,
 )
 from langchain_werewolf.game_players.base import (
-    BaseGamePlayer,
     GamePlayerRunnableInputModel,
 )
+from langchain_werewolf.game_players.player_roles import (
+    FortuneTeller,
+    Knight,
+    Villager,
+    Werewolf,
+)
+from langchain_werewolf.game_players.registry import PlayerRoleRegistry
 from langchain_werewolf.models.config import PlayerConfig
 from langchain_werewolf.models.state import (
     ChatHistoryModel,
@@ -164,56 +169,116 @@ def test__generate_base_runnable_with_cli_player_config(
 
 
 @pytest.mark.parametrize(
-    'n_players, n_werewolves, n_knights, n_fortune_tellers',
+    'n_players, n_players_by_role',
     [
-        (1, 2, 0, 0),
-        (1, 0, 2, 0),
-        (1, 0, 0, 2),
-        (2, 1, 1, 1),
+        (
+            1,
+            {
+                Werewolf.role: 2,
+                FortuneTeller.role: 0,
+                Knight.role: 0,
+            },
+        ),
+        (
+            1,
+            {
+                Werewolf.role: 0,
+                FortuneTeller.role: 2,
+                Knight.role: 0,
+            },
+        ),
+        (
+            1,
+            {
+                Werewolf.role: 0,
+                FortuneTeller.role: 0,
+                Knight.role: 2,
+            },
+        ),
+        (
+            2,
+            {
+                Werewolf.role: 1,
+                FortuneTeller.role: 1,
+                Knight.role: 1,
+            },
+        ),
     ],
 )
 def test_generate_players_with_invalid_n_xxxxxxs(
     n_players: int,
-    n_werewolves: int,
-    n_knights: int,
-    n_fortune_tellers: int,
+    n_players_by_role: dict[str, int],
 ) -> None:
     # assert
     with pytest.raises(ValueError):
         generate_players(
             n_players,
-            n_werewolves,
-            n_knights,
-            n_fortune_tellers,
+            n_players_by_role,
             seed=0,
             custom_players=[],
         )
 
 
 @pytest.mark.parametrize(
-    'n_players, n_werewolves, n_knights, n_fortune_tellers, custom_players',
+    'n_players, n_players_by_role, custom_players',
     [
-        (5, 2, 0, 0, [PlayerConfig(role=ERole.Werewolf)]*3),
-        (5, 0, 2, 0, [PlayerConfig(role=ERole.Knight)]*3),
-        (5, 0, 0, 2, [PlayerConfig(role=ERole.FortuneTeller)]*3),
-        (5, 1, 1, 1, [PlayerConfig(role=ERole.Villager)]*3),
-        (2, 0, 0, 0, [PlayerConfig(role=ERole.Villager)]*3),
+        (
+            5,
+            {
+                Werewolf.role: 2,
+                FortuneTeller.role: 0,
+                Knight.role: 0,
+            },
+            [PlayerConfig(role=Werewolf.role)]*3,
+        ),
+        (
+            5,
+            {
+                Werewolf.role: 0,
+                FortuneTeller.role: 2,
+                Knight.role: 0,
+            },
+            [PlayerConfig(role=Knight.role)]*3,
+        ),
+        (
+            5,
+            {
+                Werewolf.role: 0,
+                FortuneTeller.role: 0,
+                Knight.role: 2,
+            },
+            [PlayerConfig(role=FortuneTeller.role)]*3,
+        ),
+        (
+            5,
+            {
+                Werewolf.role: 1,
+                FortuneTeller.role: 1,
+                Knight.role: 1,
+            },
+            [PlayerConfig(role=Villager.role)]*3,
+        ),
+        (
+            2,
+            {
+                Werewolf.role: 0,
+                FortuneTeller.role: 0,
+                Knight.role: 0,
+            },
+            [PlayerConfig(role=Villager.role)]*3,
+        ),
     ],
 )
 def test_generate_players_with_invalid_n_xxxxxxs_for_custom_players(
     n_players: int,
-    n_werewolves: int,
-    n_knights: int,
-    n_fortune_tellers: int,
+    n_players_by_role: dict[str, int],
     custom_players: list[PlayerConfig],
 ) -> None:
     # assert
     with pytest.raises(ValueError):
         generate_players(
             n_players,
-            n_werewolves,
-            n_knights,
-            n_fortune_tellers,
+            n_players_by_role,
             seed=0,
             custom_players=custom_players,
         )
@@ -228,26 +293,29 @@ def test_generate_players(mocker: MockerFixture) -> None:
     n_werewolves = 2
     n_knights = 2
     n_fortune_tellers = 2
+    n_players_by_role = {
+        Werewolf.role: n_werewolves,
+        FortuneTeller.role: n_fortune_tellers,
+        Knight.role: n_knights,
+    }
     custom_players = [
-        PlayerConfig(role=ERole.Werewolf, player_input_interface=EInputOutputType.standard),  # noqa
-        PlayerConfig(role=ERole.Knight, player_input_interface=EInputOutputType.standard),  # noqa
-        PlayerConfig(role=ERole.FortuneTeller, player_input_interface=EInputOutputType.standard),  # noqa
-        PlayerConfig(role=ERole.Villager, player_input_interface=EInputOutputType.standard),  # noqa
+        PlayerConfig(role=Werewolf.role, player_input_interface=EInputOutputType.standard),  # noqa
+        PlayerConfig(role=Knight.role, player_input_interface=EInputOutputType.standard),  # noqa
+        PlayerConfig(role=FortuneTeller.role, player_input_interface=EInputOutputType.standard),  # noqa
+        PlayerConfig(role=Villager.role, player_input_interface=EInputOutputType.standard),  # noqa
     ]
     actual = generate_players(
         n_players,
-        n_werewolves,
-        n_knights,
-        n_fortune_tellers,
+        n_players_by_role,
         seed=0,
         player_input_interface=EInputOutputType.standard,
         custom_players=custom_players,
     )
     assert len(actual) == n_players
-    assert sum([player.role == ERole.Werewolf for player in actual]) == n_werewolves  # noqa
-    assert sum([player.role == ERole.Knight for player in actual]) == n_knights  # noqa
-    assert sum([player.role == ERole.FortuneTeller for player in actual]) == n_fortune_tellers  # noqa
-    assert sum([player.role == ERole.Villager for player in actual]) == n_players - n_werewolves - n_knights - n_fortune_tellers  # noqa
+    assert sum([player.role == Werewolf.role for player in actual]) == n_werewolves  # noqa
+    assert sum([player.role == Knight.role for player in actual]) == n_knights  # noqa
+    assert sum([player.role == FortuneTeller.role for player in actual]) == n_fortune_tellers  # noqa
+    assert sum([player.role == Villager.role for player in actual]) == n_players - n_werewolves - n_knights - n_fortune_tellers  # noqa
 
 
 def test_generate_players_with_custom_input_interface(mocker: MockerFixture) -> None:  # noqa
@@ -261,7 +329,12 @@ def test_generate_players_with_custom_input_interface(mocker: MockerFixture) -> 
     n_werewolves = 1
     n_knights = 0
     n_fortune_tellers = 0
-    roles = [ERole.Werewolf, ERole.Villager, ERole.Villager, ERole.Villager]
+    n_players_by_role = {
+        Werewolf.role: n_werewolves,
+        FortuneTeller.role: n_fortune_tellers,
+        Knight.role: n_knights,
+    }
+    roles = [Werewolf.role, Villager.role, Villager.role, Villager.role]
     custom_players = [
         PlayerConfig(role=role, model='', player_input_interface=mock, formatter=None)  # noqa
         for role, mock in zip(roles, mocks_input_interface)
@@ -269,9 +342,7 @@ def test_generate_players_with_custom_input_interface(mocker: MockerFixture) -> 
     # execute
     actual = generate_players(
         n_players,
-        n_werewolves,
-        n_knights,
-        n_fortune_tellers,
+        n_players_by_role,
         seed=0,
         player_input_interface=None,
         custom_players=custom_players,
@@ -303,8 +374,8 @@ def test__create_echo_runnable_by_player_whether_invoke_method_calls_formatter_a
     # preparation
     mocker.patch('langchain_werewolf.setup._generate_base_runnable', mocker.Mock(return_value=RunnableLambda(str)))  # noqa
     output_mock = mocker.Mock()
-    player = BaseGamePlayer.instantiate(
-        role=ERole.Villager,
+    player = PlayerRoleRegistry.create_player(
+        key=Villager.role,
         name=player_name,
         runnable=RunnableLambda(str),
         output=RunnableLambda(output_mock),
@@ -448,18 +519,18 @@ def test_create_echo_runnable(mocker: MockerFixture) -> None:
         return_value=mocker.MagicMock(spec=BaseChatModel),
     )
     players = [
-        BaseGamePlayer.instantiate(
-            role=ERole.Villager,
+        PlayerRoleRegistry.create_player(
+            key=Villager.role,
             name='Alice',
             runnable=RunnableLambda(str),
         ),
-        BaseGamePlayer.instantiate(
-            role=ERole.Werewolf,
+        PlayerRoleRegistry.create_player(
+            key=Werewolf.role,
             name='Bob',
             runnable=RunnableLambda(str),
         ),
-        BaseGamePlayer.instantiate(
-            role=ERole.Knight,
+        PlayerRoleRegistry.create_player(
+            key=Knight.role,
             name='Charley',
             runnable=RunnableLambda(str),
         ),

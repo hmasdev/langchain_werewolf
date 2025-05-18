@@ -3,8 +3,11 @@ from typing import Callable, Literal, Iterable
 from langchain_core.runnables import Runnable
 from langgraph.graph import Graph, StateGraph, START, END
 from ..const import GAME_MASTER_NAME
-from ..enums import EResult, ERole
-from ..game_players.base import BaseGamePlayer
+from ..enums import EResult
+from ..game_players import (
+    BaseGamePlayerRole,
+    is_werewolf_role,
+)
 from ..models.state import (
     StateModel,
     create_dict_to_record_chat,
@@ -29,14 +32,14 @@ REVEAL_ALL_PLAYER_ROLES_MESSAGE_TEMPLATE: str = '''The roles of the players are 
 
 def check_victory_condition(
     state: StateModel,
-    players: Iterable[BaseGamePlayer],
+    players: Iterable[BaseGamePlayerRole],
 ) -> dict[str, EResult | None]:
     alive_players = [p for p in players if p.name in state.alive_players_names]  # noqa
     n_alive_players: int = len(state.alive_players_names)
     n_werewolves: int = len([
         player
         for player in alive_players
-        if player.role == ERole.Werewolf
+        if is_werewolf_role(player)
     ])
     n_villagers: int = n_alive_players - n_werewolves
     if n_werewolves == 0:
@@ -48,7 +51,7 @@ def check_victory_condition(
 
 
 def create_check_victory_condition_subgraph(
-    players: Iterable[BaseGamePlayer],
+    players: Iterable[BaseGamePlayerRole],
     *,
     echo_targets: list[Literal[  # type: ignore
         CHECK_VICTORY_CONDITION_TEARUP_NODE_NAME,  # type: ignore
@@ -91,7 +94,7 @@ def create_check_victory_condition_subgraph(
                 roles='\n'.join([
                     PLAYER_ROLE_MESSAGE_TEMPLATE.format(
                         name=player.name,
-                        role=player.role.value,
+                        role=player.role,
                         state=(
                             'Alive'
                             if player.name in state.alive_players_names else

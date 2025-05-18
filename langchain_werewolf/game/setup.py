@@ -1,10 +1,13 @@
+from collections import Counter
 from functools import partial
 from typing import Callable, Iterable, Literal
 from langchain_core.runnables import Runnable
 from langgraph.graph import Graph, StateGraph, START, END
 from ..const import GAME_MASTER_NAME, PACKAGE_NAME
-from ..enums import ERole
-from ..game_players.base import BaseGamePlayer
+from ..game_players import (
+    BaseGamePlayerRole,
+    is_player_with_side,
+)
 from ..models.state import (
     ChatHistoryModel,
     StateModel,
@@ -40,7 +43,7 @@ The game repeats the following steps until the villagers win or the werewolves w
 NOTE:
 - If there is more than one player who received the most votes in the voting for the person to be excluded, one of them will be chosen at random to be excluded.,
 - You can lie or hide your role in the daytime discussion.
-- There are {n_werewolves} werewolves, {n_knights} knights and {n_fortune_tellers} fortune tellers in this game.,
+- The number of each role is as follows (Format: {{role}}: {{number of players}}): {n_players_by_role_dict}
 =======================
 '''  # noqa
 
@@ -60,19 +63,22 @@ How will you behave in order to enable your team({side}) to win the game?
 
 def _announce_game_rule(
     state: StateModel,
-    players: Iterable[BaseGamePlayer],
+    players: Iterable[BaseGamePlayerRole],
     game_rule_template: str,
     role_explanation_template: str,
 ) -> dict[str, dict[frozenset[str], ChatHistoryModel]]:
+
     roles_explanation = {
         role_explanation_template.format(
-            role=player.role.value,
-            side=player.side.value,
-            victory_condition=player.victory_condition,  # noqa
+            role=player.role,
             night_action=player.night_action,
+            side=is_player_with_side(player) and player.side,  # noqa
+            victory_condition=is_player_with_side(player) and player.victory_condition,  # noqa
+            # NOTE: is_player_with_side is used for type guard # FIXME
         )
         for player in players
     }
+
     return create_dict_to_record_chat(
         sender=GAME_MASTER_NAME,
         participants=[GAME_MASTER_NAME]+[player.name for player in players],
@@ -82,32 +88,36 @@ def _announce_game_rule(
                 f'{idx+1}. {role_exp}'
                 for idx, role_exp in enumerate(roles_explanation)
             ]),
-            n_werewolves=len([p for p in players if p.role == ERole.Werewolf]),  # noqa
-            n_knights=len([p for p in players if p.role == ERole.Knight]),  # noqa
-            n_fortune_tellers=len([p for p in players if p.role == ERole.FortuneTeller]),  # noqa
+            n_players_by_role_dict=dict(
+                Counter([
+                    player.role
+                    for player in players
+                ])
+            )
         ),
     )
 
 
 def _announce_role(
     state: StateModel,
-    player: BaseGamePlayer,
+    player: BaseGamePlayerRole,
     role_announce_template: str,
 ) -> dict[str, dict[frozenset[str], ChatHistoryModel]]:
     return create_dict_to_record_chat(
         sender=GAME_MASTER_NAME,
         participants=[player.name, GAME_MASTER_NAME],
         message=role_announce_template.format(
-            role=player.role.value,
-            side=player.side.value,
-            victory_condition=player.victory_condition,
-            night_action=player.night_action,
+            role=player.role,
+            side=is_player_with_side(player) and player.side,
+            victory_condition=is_player_with_side(player) and player.victory_condition,  # noqa
+            night_action=player.night_action,  # noqa
+            # NOTE: is_player_with_xxx is used for type guard # FIXME
         ),
     )
 
 
 def create_game_preparation_graph(
-    players: Iterable[BaseGamePlayer],
+    players: Iterable[BaseGamePlayerRole],
     game_rule_template: str = GAME_RULE_TEMPLATE,
     role_explanation_template: str = ROLE_EXPLANATION_TEMPLATE,
     role_announce_template: str = ROLE_ANNOUNCE_TEMPLATE,

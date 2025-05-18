@@ -1,10 +1,10 @@
 from langchain_core.runnables import RunnableLambda
 import pytest
 from langchain_werewolf.const import GAME_MASTER_NAME
-from langchain_werewolf.enums import ERole
 from langchain_werewolf.game.chat import _player_speak
 from langchain_werewolf.game.prompts import SYSTEM_PROMPT_TEMPLATE
-from langchain_werewolf.game_players.base import BaseGamePlayer
+from langchain_werewolf.game_players import VILLAGER_ROLE
+from langchain_werewolf.game_players.registry import PlayerRoleRegistry
 from langchain_werewolf.models.state import StateModel
 
 
@@ -16,9 +16,9 @@ def test__player_speak() -> None:
         alive_players_names=[sender],
         current_speaker=sender,
     )
-    player = BaseGamePlayer.instantiate(
+    player = PlayerRoleRegistry.create_player(
         name=sender,
-        role=ERole.Villager,
+        key=VILLAGER_ROLE,
         runnable=RunnableLambda(lambda _: message),
     )
     participants = frozenset([sender, 'another', GAME_MASTER_NAME])
@@ -55,9 +55,9 @@ def test__player_speak_without_current_speaker(
         alive_players_names=[sender],
         current_speaker=current_speaker,
     )
-    player = BaseGamePlayer.instantiate(
+    player = PlayerRoleRegistry.create_player(
         name=sender,
-        role=ERole.Villager,
+        key=VILLAGER_ROLE,
         runnable=RunnableLambda(lambda _: message),
     )
     participants = frozenset([sender, 'another', GAME_MASTER_NAME])

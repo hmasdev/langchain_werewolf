@@ -4,7 +4,7 @@ from flaky import flaky
 from langchain_core.runnables import RunnableLambda
 import pytest
 from langchain_werewolf.const import GAME_MASTER_NAME
-from langchain_werewolf.game_players.knight import Knight
+from langchain_werewolf.game_players.player_roles import Knight
 from langchain_werewolf.models.state import StateModel, MsgModel
 
 load_dotenv()

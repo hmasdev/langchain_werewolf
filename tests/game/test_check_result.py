@@ -1,10 +1,14 @@
 from langchain_core.runnables import RunnableLambda
 import pytest
-from langchain_werewolf.enums import ERole, EResult
+from langchain_werewolf.enums import EResult
 from langchain_werewolf.game.check_result import (
     check_victory_condition,
 )
-from langchain_werewolf.game_players.base import BaseGamePlayer
+from langchain_werewolf.game_players import (
+    VILLAGER_ROLE,
+    WEREWOLF_ROLE,
+)
+from langchain_werewolf.game_players.registry import PlayerRoleRegistry
 from langchain_werewolf.models.state import StateModel
 
 
@@ -45,9 +49,9 @@ def test_check_victory_condition(
 ) -> None:
     # preparation
     players = [
-        BaseGamePlayer.instantiate(
+        PlayerRoleRegistry.create_player(
             name=f'player{i}',
-            role=ERole.Werewolf if i < n_werewolves else ERole.Villager,
+            key=WEREWOLF_ROLE if i < n_werewolves else VILLAGER_ROLE,
             runnable=RunnableLambda(str),
         )
         for i in range(n_alive_players)
