@@ -6,12 +6,16 @@ from langchain_werewolf.game_players.base import (
     BaseGamePlayerRole,
     BasePlayerSideMixin,
 )
+from langchain_werewolf.game_players.registry import PlayerRoleRegistry
 from langchain_werewolf.game_players.player_roles import Villager, Werewolf
 from langchain_werewolf.game_players.player_sides import (
     VillagerSideMixin,
     WerewolfSideMixin,
 )
 from langchain_werewolf.game_players.utils import (
+    find_player_by_name,
+    find_players_by_role,
+    find_players_by_side,
     is_player_with_role,
     is_player_with_side,
     is_werewolf_side,
@@ -119,3 +123,229 @@ def test_is_valid_game_player(
     expected: bool,
 ) -> None:
     assert is_valid_game_player(player) == expected
+
+
+@pytest.mark.parametrize(
+    'name, players, expected',
+    [
+        (
+            'Alice',
+            [
+                PlayerRoleRegistry.create_player(
+                    key=Villager.role,
+                    name='Alice',
+                    runnable=RunnableLambda(str),
+                ),
+                PlayerRoleRegistry.create_player(
+                    key=Werewolf.role,
+                    name='Bob',
+                    runnable=RunnableLambda(str),
+                ),
+            ],
+            PlayerRoleRegistry.create_player(
+                key=Villager.role,
+                name='Alice',
+                runnable=RunnableLambda(str),
+            ),
+        ),
+        (
+            'Bob',
+            [
+                PlayerRoleRegistry.create_player(
+                    key=Villager.role,
+                    name='Alice',
+                    runnable=RunnableLambda(str),
+                ),
+                PlayerRoleRegistry.create_player(
+                    key=Werewolf.role,
+                    name='Bob',
+                    runnable=RunnableLambda(str),
+                ),
+            ],
+            PlayerRoleRegistry.create_player(
+                key=Werewolf.role,
+                name='Bob',
+                runnable=RunnableLambda(str),
+            ),
+        ),
+    ],
+)
+def test_find_player_by_name(
+    name: str,
+    players: list[BaseGamePlayer],
+    expected: BaseGamePlayer,
+):
+    assert find_player_by_name(name, players) == expected
+
+
+def test_find_player_by_name_not_found():
+    with pytest.raises(ValueError):
+        find_player_by_name('Alice', [])
+
+
+def test_find_player_by_name_not_unique():
+    with pytest.raises(ValueError):
+        find_player_by_name(
+            'Alice',
+            [
+                PlayerRoleRegistry.create_player(
+                    key=Villager.role,
+                    name='Alice',
+                    runnable=RunnableLambda(str),
+                ),
+            ] * 3,
+        )
+
+
+@pytest.mark.parametrize(
+    'role, players, expected',
+    [
+        (
+            Villager.role,
+            [
+                PlayerRoleRegistry.create_player(
+                    key=Villager.role,
+                    name='Alice',
+                    runnable=RunnableLambda(str),
+                ),
+                PlayerRoleRegistry.create_player(
+                    key=Werewolf.role,
+                    name='Bob',
+                    runnable=RunnableLambda(str),
+                ),
+                PlayerRoleRegistry.create_player(
+                    key=Villager.role,
+                    name='Charlie',
+                    runnable=RunnableLambda(str),
+                ),
+            ],
+            [
+                PlayerRoleRegistry.create_player(
+                    key=Villager.role,
+                    name='Alice',
+                    runnable=RunnableLambda(str),
+                ),
+                PlayerRoleRegistry.create_player(
+                    key=Villager.role,
+                    name='Charlie',
+                    runnable=RunnableLambda(str),
+                ),
+            ],
+        ),
+        (
+            Werewolf.role,
+            [
+                PlayerRoleRegistry.create_player(
+                    key=Villager.role,
+                    name='Alice',
+                    runnable=RunnableLambda(str),
+                ),
+                PlayerRoleRegistry.create_player(
+                    key=Werewolf.role,
+                    name='Bob',
+                    runnable=RunnableLambda(str),
+                ),
+                PlayerRoleRegistry.create_player(
+                    key=Villager.role,
+                    name='Charlie',
+                    runnable=RunnableLambda(str),
+                ),
+            ],
+            [
+                PlayerRoleRegistry.create_player(
+                    key=Werewolf.role,
+                    name='Bob',
+                    runnable=RunnableLambda(str),
+                ),
+            ],
+        ),
+    ],
+)
+def test_find_players_by_role(
+    role: str,
+    players: list[BaseGamePlayer],
+    expected: list[BaseGamePlayer],
+):
+    assert find_players_by_role(role, players) == expected
+
+
+def test_find_players_by_role_not_found():
+    with pytest.raises(ValueError):
+        find_players_by_role(Villager.role, [])
+
+
+@pytest.mark.parametrize(
+    'side, players, expected',
+    [
+        (
+            Villager.side,
+            [
+                PlayerRoleRegistry.create_player(
+                    key=Villager.role,
+                    name='Alice',
+                    runnable=RunnableLambda(str),
+                ),
+                PlayerRoleRegistry.create_player(
+                    key=Werewolf.role,
+                    name='Bob',
+                    runnable=RunnableLambda(str),
+                ),
+                PlayerRoleRegistry.create_player(
+                    key=Villager.role,
+                    name='Charlie',
+                    runnable=RunnableLambda(str),
+                ),
+            ],
+            [
+                PlayerRoleRegistry.create_player(
+                    key=Villager.role,
+                    name='Alice',
+                    runnable=RunnableLambda(str),
+                ),
+                PlayerRoleRegistry.create_player(
+                    key=Villager.role,
+                    name='Charlie',
+                    runnable=RunnableLambda(str),
+                ),
+            ],
+        ),
+        (
+            Werewolf.side,
+            [
+                PlayerRoleRegistry.create_player(
+                    key=Villager.role,
+                    name='Alice',
+                    runnable=RunnableLambda(str),
+                ),
+                PlayerRoleRegistry.create_player(
+                    key=Werewolf.role,
+                    name='Bob',
+                    runnable=RunnableLambda(str),
+                ),
+                PlayerRoleRegistry.create_player(
+                    key=Villager.role,
+                    name='Charlie',
+                    runnable=RunnableLambda(str),
+                ),
+            ],
+            [
+                PlayerRoleRegistry.create_player(
+                    key=Werewolf.role,
+                    name='Bob',
+                    runnable=RunnableLambda(str),
+                ),
+            ],
+        ),
+    ],
+)
+def test_find_players_by_side(
+    side: str,
+    players: list[BaseGamePlayer],
+    expected: list[BaseGamePlayer],
+):
+    assert find_players_by_side(side, players) == expected
+
+
+def test_find_players_by_side_not_found():
+    with pytest.raises(ValueError):
+        find_players_by_side(Villager.side, [])

@@ -6,11 +6,6 @@ from typing import Callable, Generator, Iterable, Sized, TypeVar
 from pydantic import BaseModel
 import pydantic_core
 
-from .game_players import (
-    BaseGamePlayer,
-    PlayerRoleRegistry,
-    PlayerSideRegistry,
-)
 
 T = TypeVar('T')
 PydanticBaseModel = TypeVar('PydanticBaseModel', bound=BaseModel)
@@ -32,83 +27,6 @@ def assert_not_empty_deco(func: Callable[..., Sized]) -> Callable[..., Sized]:
             raise ValueError('The input is empty.')
         return result
     return wrapper
-
-
-def find_player_by_name(
-    name: str,
-    players: Iterable[BaseGamePlayer],
-) -> BaseGamePlayer:
-    """Find a player by name
-
-    Args:
-        name (str): the name of the player
-        players (Iterable[BaseGamePlayer]): the list of players
-
-    Raises:
-        ValueError: player not found
-        ValueError: player name is not unique
-
-    Returns:
-        BaseGamePlayer: the player with the name
-    """
-    players = list(filter(lambda x: x.name == name, players))
-    if len(players) == 0:
-        raise ValueError(f'The name {name} is not found.')
-    if len(players) > 1:
-        raise ValueError(f'The name {name} is not unique.')
-    return players[0]
-
-
-@assert_not_empty_deco
-def find_players_by_role(
-    role: str,
-    players: Iterable[BaseGamePlayer],
-) -> list[BaseGamePlayer]:
-    """Find players by role
-
-    Args:
-        role (str): the role to be found
-        players (Iterable[BaseGamePlayer]): the list of players
-
-    Returns:
-        list[BaseGamePlayer]: players with the role
-
-    Raises:
-        KeyError: if the role is not registered
-        ValueError: if there are no players with the role
-    """
-    role_cls = PlayerRoleRegistry.get_class(role)
-    return [
-        player
-        for player in players
-        if isinstance(player, role_cls)
-    ]
-
-
-@assert_not_empty_deco
-def find_players_by_side(
-    side: str,
-    players: Iterable[BaseGamePlayer],
-) -> list[BaseGamePlayer]:
-    """Find players by side
-
-    Args:
-        side (str): the side to be found
-        players (Iterable[BaseGamePlayer]): the list of players
-
-    Returns:
-        list[BaseGamePlayer]: players with the side
-
-    Raises:
-        KeyError: the side is not registered
-        ValueError: if there are no players with the side
-    """
-    side_cls = PlayerSideRegistry.get_class(side)
-    return [
-        player
-        for player in players
-        if isinstance(player, side_cls)
-    ]
 
 
 def consecutive_string_generator(

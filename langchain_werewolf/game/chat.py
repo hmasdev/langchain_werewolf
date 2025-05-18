@@ -8,7 +8,11 @@ from pydantic import BaseModel, Field
 
 from ..const import GAME_MASTER_NAME
 from ..enums import ESpeakerSelectionMethod
-from ..game_players import BaseGamePlayerRole, is_werewolf_role
+from ..game_players import (
+    BaseGamePlayerRole,
+    find_player_by_name,
+    is_werewolf_role,
+)
 from ..models.state import (
     ChatHistoryModel,
     StateModel,
@@ -18,7 +22,6 @@ from ..models.state import (
     get_related_messsages,
 )
 from ..utils import (
-    find_player_by_name,
     random_permutated_infinite_generator,
 )
 from .prompts import (

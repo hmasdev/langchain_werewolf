@@ -13,7 +13,7 @@ from ...models.state import (
     StateModel,
     create_dict_to_record_chat,
 )
-from ...utils import find_player_by_name
+from ..utils import find_player_by_name
 
 
 @PlayerRoleRegistry.register
