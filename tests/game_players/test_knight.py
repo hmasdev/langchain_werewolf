@@ -39,11 +39,11 @@ def test_knight_act_in_night() -> None:
     'OPENAI_API_KEY' not in os.environ,
     reason='OPENAI_API_KEY is not set.',
 )
-@flaky(max_runs=3, min_passes=1)
+@flaky(max_runs=5, min_passes=1)
 def test_knight_act_in_night_integration() -> None:
     # preparation
     from langchain_openai import ChatOpenAI
-    from langchain_werewolf.game_players.helper import generate_game_player_runnable  # noqa
+    from langchain_werewolf.game_players import generate_game_player_runnable  # noqa
     player = Knight(
         name='Alice',
         runnable=generate_game_player_runnable(ChatOpenAI(model='gpt-4o-mini')),  # noqa

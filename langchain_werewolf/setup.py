@@ -34,10 +34,11 @@ from .game_players import (
     BaseGamePlayerRole,
     PlayerRoleRegistry,
     VILLAGER_ROLE,
+    filter_state_according_to_player,
+    generate_game_player_runnable,
     is_player_with_role,
     is_player_with_side,
 )
-from .game_players.helper import generate_game_player_runnable, filter_state_according_to_player  # noqa
 from .io import create_input_runnable, create_output_runnable
 from .llm_utils import create_chat_model, create_translator_runnable
 from .models.config import PlayerConfig

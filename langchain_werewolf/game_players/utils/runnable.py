@@ -7,19 +7,22 @@ from langchain_core.runnables import (
     RunnableLambda,
     RunnablePassthrough,
 )
-from .base import GamePlayerRunnableInputModel, BaseGamePlayer
-from .utils import is_werewolf_role
-from ..models.state import (
-    MsgModel,
-    StateModel,
-    get_related_chat_histories,
-)
+from ..base import GamePlayerRunnableInputModel
+from ...models.state import MsgModel
 
-runnable_str2game_player_runnable_input: Runnable[
-    str,
+
+_runnable_routing_by_input_type: Runnable[
+    GamePlayerRunnableInputModel | str,
     GamePlayerRunnableInputModel,
-] = RunnableLambda(
-    lambda s: GamePlayerRunnableInputModel(prompt=s, system_prompt=None)
+] = RunnableBranch(
+    (
+        lambda x: isinstance(x, str),
+        lambda s: GamePlayerRunnableInputModel(prompt=s),
+    ),
+    RunnablePassthrough(),
+).with_types(
+    input_type=GamePlayerRunnableInputModel | str,  # type: ignore[arg-type]
+    output_type=GamePlayerRunnableInputModel,  # type: ignore[arg-type]
 )
 
 
@@ -63,7 +66,7 @@ def _generate_game_player_runnable_based_on_runnable_lambda(
 
 def generate_game_player_runnable(
     chatmodel_or_runnable: BaseChatModel | Runnable[str, str],
-) -> Runnable[GamePlayerRunnableInputModel, str]:
+) -> Runnable[GamePlayerRunnableInputModel | str, str]:
     """Generate a runnable for BaseGamePlayer.runnable
 
     Args:
@@ -75,42 +78,15 @@ def generate_game_player_runnable(
     Returns:
         Runnable[GamePlayerRunnableInputModel, str]: the runnable for BaseGamePlayer.runnable
     """  # noqa
-
+    runnable: Runnable[GamePlayerRunnableInputModel, str]
     if isinstance(chatmodel_or_runnable, BaseChatModel):
-        return _generate_game_player_runnable_based_on_chat_model(chatmodel_or_runnable)  # noqa
+        runnable = _generate_game_player_runnable_based_on_chat_model(chatmodel_or_runnable)  # noqa
     elif all([
         isinstance(chatmodel_or_runnable, Runnable),
         hasattr(chatmodel_or_runnable, 'InputType') and chatmodel_or_runnable.InputType == str,  # noqa
         hasattr(chatmodel_or_runnable, 'OutputType') and chatmodel_or_runnable.OutputType == str,  # noqa
     ]):
-        return _generate_game_player_runnable_based_on_runnable_lambda(chatmodel_or_runnable)  # noqa
+        runnable = _generate_game_player_runnable_based_on_runnable_lambda(chatmodel_or_runnable)  # noqa
     else:
         raise ValueError(f'chatmodel_or_runnable must be either a BaseChatModel or a Runnable[str, str] but {chatmodel_or_runnable}')  # noqa
-
-
-def filter_state_according_to_player(
-    player: BaseGamePlayer,
-    state: StateModel,
-) -> StateModel:
-    return StateModel(
-        # NOTE: get the chat histories related to the player
-        chat_state=get_related_chat_histories(player.name, state),
-        # NOTE: safe players are not revealed to the player
-        # TODO: reveal the safe player saved by a knight to the knight
-        safe_players_names=set(),
-        # NOTE: nighttime votes are only revealed to werewolves
-        nighttime_votes_history=(
-            state.nighttime_votes_history
-            if is_werewolf_role(player)
-            else []
-        ),
-        result=state.result,
-        **state.model_dump(
-            exclude={
-                'chat_state',
-                'safe_players_names',
-                'nighttime_votes_history',
-                'result',
-            }
-        ),
-    )
+    return (_runnable_routing_by_input_type | runnable)

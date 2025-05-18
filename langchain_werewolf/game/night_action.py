@@ -6,9 +6,9 @@ from pydantic import BaseModel, Field
 from ..const import GAME_MASTER_NAME
 from ..game_players import (
     BaseGamePlayerRole,
+    filter_state_according_to_player,
     is_werewolf_role,
 )
-from ..game_players.helper import filter_state_according_to_player
 from ..models.state import (
     ChatHistoryModel,
     StateModel,

@@ -4,7 +4,7 @@ from langchain_core.runnables import RunnableLambda
 import pytest
 from pytest_mock import MockerFixture
 from langchain_werewolf.game_players.base import GamePlayerRunnableInputModel
-from langchain_werewolf.game_players.helper import (
+from langchain_werewolf.game_players.utils.runnable import (
     _generate_game_player_runnable_based_on_runnable_lambda,
     _generate_game_player_runnable_based_on_chat_model,
     generate_game_player_runnable,
@@ -49,7 +49,7 @@ def test_game_player_runnable_with_base_chat_model(mocker: MockerFixture) -> Non
     # execution
     actual = generate_game_player_runnable(runnable_mock)  # noqa
     # assert
-    assert actual.InputType == GamePlayerRunnableInputModel
+    assert actual.InputType == GamePlayerRunnableInputModel | str
     assert actual.OutputType == str
     assert actual.invoke(input_) == expected
 
@@ -62,7 +62,7 @@ def test_game_player_runnable_with_runnable_lambda() -> None:  # noqa
     # execution
     actual = generate_game_player_runnable(runnable_mock)  # noqa
     # assert
-    assert actual.InputType == GamePlayerRunnableInputModel
+    assert actual.InputType == GamePlayerRunnableInputModel | str
     assert actual.OutputType == str
     assert actual.invoke(input_) == expected
 

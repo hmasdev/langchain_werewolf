@@ -2,7 +2,6 @@ import json
 from typing import ClassVar, Iterable
 from pydantic import Field
 from ..base import BaseGamePlayer, BaseGamePlayerRole
-from ..helper import runnable_str2game_player_runnable_input
 from ..player_sides import VillagerSideMixin
 from ..registry import PlayerRoleRegistry
 from ..utils import is_werewolf_role
@@ -13,7 +12,7 @@ from ...models.state import (
     StateModel,
     create_dict_to_record_chat,
 )
-from ...utils import find_player_by_name
+from ..utils import find_player_by_name
 
 
 @PlayerRoleRegistry.register
@@ -41,7 +40,7 @@ class FortuneTeller(BaseGamePlayerRole, VillagerSideMixin):
             target_player_name_raw.message,
             [p.name for p in players if p.name in state.alive_players_names],  # noqa
             context=f'Extract the valid name of the player as the answer to "{self.question_to_decide_night_action}"',  # noqa
-            chat_model=runnable_str2game_player_runnable_input | self.runnable,  # noqa
+            chat_model=self.runnable,
         )
         try:
             target_player = find_player_by_name(target_player_name, players)

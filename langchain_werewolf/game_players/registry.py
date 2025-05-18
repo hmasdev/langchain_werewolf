@@ -171,7 +171,7 @@ class PlayerRoleRegistry:
         cls,
         key: str,
         name: str,
-        runnable: Runnable[GamePlayerRunnableInputModel, str],
+        runnable: Runnable[GamePlayerRunnableInputModel | str, str],
         **kwargs,
     ) -> BaseGamePlayerRole:
         """Create a player by key
