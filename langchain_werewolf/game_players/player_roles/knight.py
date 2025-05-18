@@ -39,7 +39,7 @@ class Knight(BaseGamePlayerRole, VillagerSideMixin):
         try:
             target_player_name = extract_name(
                 target_player_name_raw.message,
-                [p.name for p in players if p.name in state.alive_players_names and p != self.name],  # noqa
+                [p.name for p in players if p.name in state.alive_players_names and p.name != self.name],  # noqa
                 context=f'Extract the valid name of the player as the answer to "{self.question_to_decide_night_action}"',  # noqa
                 chat_model=self.runnable,
             )
