@@ -26,11 +26,11 @@ def assert_not_empty_deco(func: Callable[..., Sized]) -> Callable[..., Sized]:
         Callable[..., Sized]: the decorated function
     """
     @wraps(func)
-    def wrapper(*args, **kwargs):
+    def wrapper(*args, **kwargs) -> Sized:
         result = func(*args, **kwargs)
         if len(result) == 0:
             raise ValueError('The input is empty.')
-        return func(*args, **kwargs)
+        return result
     return wrapper
 
 
@@ -74,7 +74,8 @@ def find_players_by_role(
         list[BaseGamePlayer]: players with the role
 
     Raises:
-        KeyError: the role is not registered
+        KeyError: if the role is not registered
+        ValueError: if there are no players with the role
     """
     role_cls = PlayerRoleRegistry.get_class(role)
     return [
@@ -100,6 +101,7 @@ def find_players_by_side(
 
     Raises:
         KeyError: the side is not registered
+        ValueError: if there are no players with the side
     """
     side_cls = PlayerSideRegistry.get_class(side)
     return [
