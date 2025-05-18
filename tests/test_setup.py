@@ -395,10 +395,7 @@ def test__create_echo_runnable_by_player_whether_invoke_method_calls_formatter_a
     ], key=lambda msg: msg.timestamp)
     assert expected  # check not empty
     # execute
-    echo_runnable = _create_echo_runnable_by_player(
-        player=player,
-        color=None,
-    )
+    echo_runnable = _create_echo_runnable_by_player(player=player)
     echo_runnable.invoke(STATE4TEST)
     # assert
     output_mock.assert_has_calls(expected)

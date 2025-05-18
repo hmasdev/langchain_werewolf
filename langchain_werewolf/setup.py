@@ -206,12 +206,10 @@ def _create_echo_runnable_by_player(
     player: BaseGamePlayer,
     *,
     cache: set[str] | None = None,
-    color: str | None = None,
 ) -> Runnable[StateModel, None]:
     cache = cache or set()  # NOTE: if cache is None, cache does not work
     if player.output is None:
         return RunnableLambda(lambda _: None)
-    styler = partial(click.style, fg=color) if color is not None else None
     # create runnable
     return (
         RunnableLambda(lambda state: filter_state_according_to_player(player, state))  # noqa
@@ -228,15 +226,7 @@ def _create_echo_runnable_by_player(
                             translated_msg=RunnableLambda(attrgetter('message')) | player.translator,  # noqa
                         )
                         | RunnableLambda(lambda dic: MsgModel(**(dic['orig'].model_dump() | {'message': dic['translated_msg']})))  # noqa
-                        | RunnableLambda(
-                            (lambda m: player.formatter.format(**m.model_dump()))  # noqa
-                            if isinstance(player.formatter, str) else
-                            (player.formatter or MsgModel.format)
-                        )
-                        | create_output_runnable(
-                            output_func=player.output.invoke,
-                            styler=styler,
-                        )
+                        | RunnableLambda(player.receive_message)
                     ),
                 )
             ),
@@ -378,7 +368,6 @@ def create_echo_runnable(
                 f'{DEFAULT_PLAYER_PREFIX}{i+1}': _create_echo_runnable_by_player(  # noqa
                     player=player,
                     cache=caches[player.name],
-                    color=player_colors_[player.name],
                 )
                 for i, player in enumerate(players)
             },  # type: ignore
