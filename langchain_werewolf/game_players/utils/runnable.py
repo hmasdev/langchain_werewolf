@@ -11,7 +11,7 @@ from ..base import GamePlayerRunnableInputModel
 from ...models.state import MsgModel
 
 
-runnable_routing_by_input_type: Runnable[
+_runnable_routing_by_input_type: Runnable[
     GamePlayerRunnableInputModel | str,
     GamePlayerRunnableInputModel,
 ] = RunnableBranch(
@@ -89,4 +89,4 @@ def generate_game_player_runnable(
         runnable = _generate_game_player_runnable_based_on_runnable_lambda(chatmodel_or_runnable)  # noqa
     else:
         raise ValueError(f'chatmodel_or_runnable must be either a BaseChatModel or a Runnable[str, str] but {chatmodel_or_runnable}')  # noqa
-    return runnable_routing_by_input_type | runnable
+    return _runnable_routing_by_input_type | runnable
