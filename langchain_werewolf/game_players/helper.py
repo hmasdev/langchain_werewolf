@@ -1,3 +1,4 @@
+from functools import partial
 from operator import attrgetter
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import SystemMessage, HumanMessage
@@ -8,14 +9,21 @@ from langchain_core.runnables import (
     RunnablePassthrough,
 )
 from .base import GamePlayerRunnableInputModel
-from .utils import is_werewolf_role
 from ..models.state import MsgModel
 
-runnable_str2game_player_runnable_input: Runnable[
-    str,
+
+runnable_routing_by_input_type: Runnable[
+    GamePlayerRunnableInputModel | str,
     GamePlayerRunnableInputModel,
-] = RunnableLambda(
-    lambda s: GamePlayerRunnableInputModel(prompt=s, system_prompt=None)
+] = RunnableBranch(
+    (
+        lambda x: isinstance(x, str),
+        partial(GamePlayerRunnableInputModel, system_prompt=None),
+    ),
+    RunnablePassthrough(),
+).with_types(
+    input_type=GamePlayerRunnableInputModel | str,  # type: ignore[arg-type]
+    output_type=GamePlayerRunnableInputModel,  # type: ignore[arg-type]
 )
 
 
@@ -59,7 +67,7 @@ def _generate_game_player_runnable_based_on_runnable_lambda(
 
 def generate_game_player_runnable(
     chatmodel_or_runnable: BaseChatModel | Runnable[str, str],
-) -> Runnable[GamePlayerRunnableInputModel, str]:
+) -> Runnable[GamePlayerRunnableInputModel | str, str]:
     """Generate a runnable for BaseGamePlayer.runnable
 
     Args:
@@ -71,14 +79,15 @@ def generate_game_player_runnable(
     Returns:
         Runnable[GamePlayerRunnableInputModel, str]: the runnable for BaseGamePlayer.runnable
     """  # noqa
-
+    runnable: Runnable[GamePlayerRunnableInputModel, str]
     if isinstance(chatmodel_or_runnable, BaseChatModel):
-        return _generate_game_player_runnable_based_on_chat_model(chatmodel_or_runnable)  # noqa
+        runnable = _generate_game_player_runnable_based_on_chat_model(chatmodel_or_runnable)  # noqa
     elif all([
         isinstance(chatmodel_or_runnable, Runnable),
         hasattr(chatmodel_or_runnable, 'InputType') and chatmodel_or_runnable.InputType == str,  # noqa
         hasattr(chatmodel_or_runnable, 'OutputType') and chatmodel_or_runnable.OutputType == str,  # noqa
     ]):
-        return _generate_game_player_runnable_based_on_runnable_lambda(chatmodel_or_runnable)  # noqa
+        runnable = _generate_game_player_runnable_based_on_runnable_lambda(chatmodel_or_runnable)  # noqa
     else:
         raise ValueError(f'chatmodel_or_runnable must be either a BaseChatModel or a Runnable[str, str] but {chatmodel_or_runnable}')  # noqa
+    return runnable_routing_by_input_type | runnable

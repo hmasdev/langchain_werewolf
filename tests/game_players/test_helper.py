@@ -49,7 +49,7 @@ def test_game_player_runnable_with_base_chat_model(mocker: MockerFixture) -> Non
     # execution
     actual = generate_game_player_runnable(runnable_mock)  # noqa
     # assert
-    assert actual.InputType == GamePlayerRunnableInputModel
+    assert actual.InputType == GamePlayerRunnableInputModel | str
     assert actual.OutputType == str
     assert actual.invoke(input_) == expected
 
@@ -62,7 +62,7 @@ def test_game_player_runnable_with_runnable_lambda() -> None:  # noqa
     # execution
     actual = generate_game_player_runnable(runnable_mock)  # noqa
     # assert
-    assert actual.InputType == GamePlayerRunnableInputModel
+    assert actual.InputType == GamePlayerRunnableInputModel | str
     assert actual.OutputType == str
     assert actual.invoke(input_) == expected
 

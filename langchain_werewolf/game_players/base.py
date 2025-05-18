@@ -32,7 +32,7 @@ class BaseGamePlayer(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True, frozen=True)
 
     name: str = Field(..., title="the name of the player")
-    runnable: SkipValidation[Runnable[GamePlayerRunnableInputModel, str]] = Field(  # noqa
+    runnable: SkipValidation[Runnable[GamePlayerRunnableInputModel | str, str]] = Field(  # noqa
         title="a runnable to define player's behavior",
         description="a runnable to define player's behavior which receives prompt and sysmtem prompt from the game and returns a player's message",  # noqa
     )
