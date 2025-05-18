@@ -107,7 +107,7 @@ def create_game_graph(
     workflow.add_node(
         'night_chat',
         create_run_nighttime_chat_subgraph(
-            players,
+            werewolves,
             **(chat_kwargs | nighttime_chat_kwargs),  # type: ignore # noqa
             display=echo,
         ).compile(),
