@@ -26,11 +26,11 @@ _input_map: dict[EInputOutputType, Callable[[str], Any]] = {
     EInputOutputType.none: lambda _: None,
     EInputOutputType.standard: delay_deco(attach_prefix_to_prompt(input), seconds=2),  # noqa
     EInputOutputType.click: delay_deco(attach_prefix_to_prompt(click.prompt), seconds=2),  # noqa
-    # FIXME: The use of `delay_deco` here introduces a delay to avoid overlapping output and input prompts,
-    # which can cause confusion in interactive sessions. However, this is a temporary workaround.
-    # A long-term solution could involve redesigning the input/output handling to ensure proper synchronization
-    # without relying on arbitrary delays. Consider exploring event-driven approaches or threading mechanisms
-    # to manage prompt timing more effectively.  # noqa
+    # FIXME: The use of `delay_deco` here introduces a delay to avoid overlapping output and input prompts,  # noqa
+    # which can cause confusion in interactive sessions. However, this is a temporary workaround.  # noqa
+    # A long-term solution could involve redesigning the input/output handling to ensure proper synchronization  # noqa
+    # without relying on arbitrary delays. Consider exploring event-driven approaches or threading mechanisms  # noqa
+    # to manage prompt timing more effectively.
 }
 
 _output_map: dict[EInputOutputType, Callable[[Any], None]] = {
