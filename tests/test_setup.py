@@ -308,7 +308,6 @@ def test_generate_players(mocker: MockerFixture) -> None:
         n_players,
         n_players_by_role,
         seed=0,
-        player_input_interface=EInputOutputType.standard,
         custom_players=custom_players,
     )
     assert len(actual) == n_players
@@ -344,7 +343,6 @@ def test_generate_players_with_custom_input_interface(mocker: MockerFixture) -> 
         n_players,
         n_players_by_role,
         seed=0,
-        player_input_interface=None,
         custom_players=custom_players,
     )
     # assert

@@ -9,12 +9,26 @@ from langchain_core.runnables import (
 from .enums import EInputOutputType
 
 
+def attach_prefix_to_prompt(
+    input_func: Callable[[str], Any],
+    prefix: str = ">>> ",
+) -> Callable[[str], Any]:
+
+    def wrapped_input_func(prompt: str, *args, **kwargs) -> Any:
+        prompt = f"{prefix} {prompt}"
+        return input_func(prompt, *args, **kwargs)
+
+    return wrapped_input_func
+
+
 _input_map: dict[EInputOutputType, Callable[[str], Any]] = {
-    EInputOutputType.standard: input,
-    EInputOutputType.click: click.prompt,
+    EInputOutputType.none: lambda _: None,
+    EInputOutputType.standard: attach_prefix_to_prompt(input),
+    EInputOutputType.click: attach_prefix_to_prompt(click.prompt),
 }
 
 _output_map: dict[EInputOutputType, Callable[[Any], None]] = {
+    EInputOutputType.none: lambda _: None,
     EInputOutputType.standard: print,
     EInputOutputType.click: click.echo,
 }

@@ -74,11 +74,13 @@ def _generate_base_runnable(
 
     NOTE:
         priority:
-            1. models in MODEL_SERVICE_MAP
-            2. input_func is not None
+            1. input_func if it is not None
+            2. model if it is in MODEL_SERVICE_MAP
             3. DEFAULT_MODEL
     """  # noqa
-    if (
+    if input_func is not None:
+        return create_input_runnable(input_func=input_func)
+    elif (
         model in MODEL_SERVICE_MAP
         and MODEL_SERVICE_MAP[model] in {
             EChatService.OpenAI,
@@ -90,11 +92,8 @@ def _generate_base_runnable(
             model,
             seed=seed if seed is not None and seed >= 0 else None,
         )
-    elif input_func is not None:
-        return create_input_runnable(input_func=input_func)
     else:
-        if model is not None:
-            logger.warning(f'Invalid a pair of model={model} and input_func={input_func}. So use a chat model with {DEFAULT_MODEL}')  # noqa
+        logger.warning(f"Use {DEFAULT_MODEL} because {model} is not in {list(MODEL_SERVICE_MAP.keys())}.")  # noqa
         return create_chat_model(
             DEFAULT_MODEL,
             seed=seed if seed is not None and seed >= 0 else None,
@@ -107,7 +106,6 @@ def generate_players(
     custom_players: list[PlayerConfig] = [],
     model: str | None = DEFAULT_MODEL,
     seed: int = -1,
-    player_input_interface: Callable[[str], Any] | EInputOutputType | None = None,  # noqa
     logger: Logger = getLogger(__name__),
 ) -> list[BaseGamePlayerRole]:
 
@@ -162,10 +160,7 @@ def generate_players(
     translators = [
         create_translator_runnable(
             to_language=player_cfg.language if player_cfg and player_cfg.language else BASE_LANGUAGE,  # noqa
-            chat_llm=_generate_base_runnable(
-                player_cfg.model if hasattr(player_cfg, 'model') else model,  # type: ignore # noqa
-                seed=seed
-            ),
+            chat_llm=_generate_base_runnable(getattr(player_cfg, 'model', model), seed=seed),  # noqa
         )
         for player_cfg in players_cfg
     ]
@@ -173,10 +168,7 @@ def generate_players(
         create_translator_runnable(
             to_language=BASE_LANGUAGE,
             from_language=player_cfg.language if player_cfg and player_cfg.language else BASE_LANGUAGE,  # noqa
-            chat_llm=_generate_base_runnable(
-                player_cfg.model if hasattr(player_cfg, 'model') else model,  # type: ignore # noqa
-                seed=seed
-            ),
+            chat_llm=_generate_base_runnable(getattr(player_cfg, 'model', model), seed=seed),  # noqa
         )
         for player_cfg in players_cfg
     ]
@@ -189,8 +181,8 @@ def generate_players(
             name=player_cfg.name if player_cfg and player_cfg.name else name_generator.__next__(),  # noqa
             runnable=generate_game_player_runnable(_generate_base_runnable(
                 player_cfg.model if hasattr(player_cfg, 'model') else model,  # type: ignore # noqa
-                player_cfg.player_input_interface if hasattr(player_cfg, 'player_input_interface') else player_input_interface,  # type: ignore # noqa
-                seed
+                getattr(player_cfg, 'player_input_interface', None),
+                seed,
             )),
             output=(
                 create_output_runnable(player_cfg.player_output_interface)  # noqa
