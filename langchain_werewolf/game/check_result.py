@@ -6,6 +6,7 @@ from ..const import GAME_MASTER_NAME
 from ..enums import EResult
 from ..game_players import (
     BaseGamePlayerRole,
+    is_player_with_side,
     is_werewolf_role,
 )
 from ..models.state import (
@@ -24,7 +25,7 @@ RESULT_ANNOUNCE_NODE_NAME: str = 'announce_result'
 REVEAL_ROLES_NODE_NAME: str = 'reveal_roles'
 
 GAME_RESULT_MESSAGE_TEMPLATE: str = 'The game has ended: {result}'
-PLAYER_ROLE_MESSAGE_TEMPLATE: str = '- The role of {name} is {role} (State: {state})'  # noqa
+PLAYER_ROLE_MESSAGE_TEMPLATE: str = '- The role of {name} is {role} ({side}) (State: {state})'  # noqa
 REVEAL_ALL_PLAYER_ROLES_MESSAGE_TEMPLATE: str = '''The roles of the players are as follows:
 {roles}
 '''  # noqa
@@ -103,7 +104,8 @@ def create_check_victory_condition_subgraph(
                                 if player.name in {v.value for v in state.daytime_vote_result_history} else  # noqa
                                 f'Day {list(v.value for v in state.nighttime_vote_result_history).index(player.name)+1} nighttime'  # noqa
                             )
-                        ),  # noqa
+                        ),
+                        side=is_player_with_side(player) and player.side,
                     )
                     for player in players
                 ])
