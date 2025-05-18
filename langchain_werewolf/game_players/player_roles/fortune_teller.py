@@ -1,5 +1,6 @@
 import json
 from typing import ClassVar, Iterable
+from langchain_core.exceptions import OutputParserException
 from pydantic import Field
 from ..base import BaseGamePlayer, BaseGamePlayerRole
 from ..player_sides import VillagerSideMixin
@@ -36,12 +37,19 @@ class FortuneTeller(BaseGamePlayerRole, VillagerSideMixin):
             prompt=self.question_to_decide_night_action,
             system_prompt=json.dumps([m.model_dump() for m in messages]),
         )
-        target_player_name = extract_name(
-            target_player_name_raw.message,
-            [p.name for p in players if p.name in state.alive_players_names],  # noqa
-            context=f'Extract the valid name of the player as the answer to "{self.question_to_decide_night_action}"',  # noqa
-            chat_model=self.runnable,
-        )
+        try:
+            target_player_name = extract_name(
+                target_player_name_raw.message,
+                [p.name for p in players if p.name in state.alive_players_names],  # noqa
+                context=f'Extract the valid name of the player as the answer to "{self.question_to_decide_night_action}"',  # noqa
+                chat_model=self.runnable,
+            )
+        except OutputParserException:
+            return create_dict_to_record_chat(  # type: ignore # noqa
+                self.name,
+                [GAME_MASTER_NAME],
+                'Failed to decide the target player.',
+            )
         try:
             target_player = find_player_by_name(target_player_name, players)
             return create_dict_to_record_chat(  # type: ignore # noqa
