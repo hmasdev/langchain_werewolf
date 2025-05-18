@@ -122,7 +122,7 @@ def find_player_by_name(
 def find_players_by_role(
     role: str,
     players: Iterable[BaseGamePlayer],
-) -> list[BaseGamePlayer]:
+) -> list[BaseGamePlayerRole]:
     """Find players by role
 
     Args:
@@ -130,7 +130,7 @@ def find_players_by_role(
         players (Iterable[BaseGamePlayer]): the list of players
 
     Returns:
-        list[BaseGamePlayer]: players with the role
+        list[BaseGamePlayerRole]: players with the role
 
     Raises:
         KeyError: if the role is not registered
@@ -148,7 +148,7 @@ def find_players_by_role(
 def find_players_by_side(
     side: str,
     players: Iterable[BaseGamePlayer],
-) -> list[BaseGamePlayer]:
+) -> list[BasePlayerSideMixin]:
     """Find players by side
 
     Args:
@@ -156,7 +156,7 @@ def find_players_by_side(
         players (Iterable[BaseGamePlayer]): the list of players
 
     Returns:
-        list[BaseGamePlayer]: players with the side
+        list[BasePlayerSideMixin]: players with the side
 
     Raises:
         KeyError: the side is not registered
