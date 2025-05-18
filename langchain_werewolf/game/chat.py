@@ -7,7 +7,7 @@ from langgraph.graph import END, START, Graph, StateGraph
 from pydantic import BaseModel, Field
 
 from ..const import GAME_MASTER_NAME
-from ..enums import ESpeakerSelectionMethod
+from ..enums import ERole, ESpeakerSelectionMethod
 from ..game_players.base import BaseGamePlayer
 from ..models.state import (
     ChatHistoryModel,
@@ -122,7 +122,10 @@ def _tearup_chat(
 ) -> dict[str, object]:  # type: ignore
     return (  # type: ignore
         create_dict_to_update_chat_remaining_number(
-            len(state.alive_players_names)*n_turns_per_day
+            len([
+                p for p in players
+                if p.name in state.alive_players_names
+            ]) * n_turns_per_day
         )
         | create_dict_to_record_chat(
             sender=GAME_MASTER_NAME,
@@ -273,6 +276,11 @@ def create_run_nighttime_chat_subgraph(
     ],
     display: Callable[[StateModel], None] | Runnable[StateModel, None] | None = None,  # noqa
 ) -> Graph:
+    # Check if `werewolves` contains only werewolf players
+    invalid_players = [player.name for player in werewolves if player.role != ERole.Werewolf]  # noqa
+    if invalid_players:
+        raise ValueError(f"The following players are not werewolves but participate in the nighttime chat: {', '.join(invalid_players)}.")  # noqa
+
     return create_run_chat_subbraph(
         werewolves,
         prompt,
