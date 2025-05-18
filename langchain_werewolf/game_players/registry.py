@@ -92,7 +92,7 @@ class PlayerSideRegistry:
         Initialize the registry with all sides in the following module registered:
             `langchain_werewolf.game_players.player_sides`
         """  # noqa
-        from .player_sides import __auto_registered__  # noqa
+        from .player_sides import __all__  # noqa
         return cls
 
 
@@ -197,5 +197,5 @@ class PlayerRoleRegistry:
         Initialize the registry with all roles in the following module registered:
             `langchain_werewolf.game_players.player_roles`
         """  # noqa
-        from .player_roles import __auto_registered__  # noqa
+        from .player_roles import __all__  # noqa
         return cls

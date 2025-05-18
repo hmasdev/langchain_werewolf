@@ -18,7 +18,7 @@ class VillagerSideMixin(BasePlayerSideMixin):
     victory_condition: ClassVar[str] = "All werewolves are excluded from the game"  # noqa
 
 
-__auto_registered__ = [
-    WerewolfSideMixin,
-    VillagerSideMixin,
+__all__ = [
+    WerewolfSideMixin.__name__,
+    VillagerSideMixin.__name__,
 ]

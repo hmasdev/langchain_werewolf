@@ -9,10 +9,3 @@ __all__ = [
     Villager.__name__,
     Werewolf.__name__,
 ]
-
-__auto_registered__ = [
-    FortuneTeller,
-    Knight,
-    Villager,
-    Werewolf,
-]

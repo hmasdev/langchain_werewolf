@@ -81,6 +81,8 @@ Usage: python -m langchain_werewolf [OPTIONS]
 Options:
   -n, --n-players INTEGER         The number of players. Default is 4.
   --n-werewolf INTEGER            The number of werewolfs. Default is 1.
+  --n-goodnight_villager INTEGER  The number of goodnight_villagers. Default
+                                  is 0.
   --n-villager INTEGER            The number of villagers. Default is 0.
   --n-knight INTEGER              The number of knights. Default is 0.
   --n-fortuneteller INTEGER       The number of fortunetellers. Default is 0.
@@ -184,8 +186,8 @@ Follow the checklist first, then consult the detailed steps and code samples.
 
 2. [ ] **Mandatory class attributes**
    ```python
-   role: ClassVar[str] = "seer"
-   night_action: ClassVar[str] = "Reveal a player’s role"
+   role: ClassVar[str] = "YourCustomRole"
+   night_action: ClassVar[str] = "YourCustomRole Night Action Description Here"
    ```
 
    If you want to implement a custom night action, override `act_in_night` method.
@@ -196,14 +198,12 @@ Follow the checklist first, then consult the detailed steps and code samples.
    * Import the module in `langchain_werewolf/game_players/player_roles/__init__.py`
 
      ```python
-     from .seer import Seer        # add this line
-     __all__.append("Seer")        # string names for docs & IDEs
-     __auto_registered__.append(Seer)   # actual classes for the registry
+     from .your_custom_role import YourCustomRole        # add this line
      ```
 
 #### Step-by-step guide
 
-1. Create a new module in `langchain_werewolf/game_players/player_roles/` directory, e.g. `my_custom_role.py`.
+1. Create a new module in `langchain_werewolf/game_players/player_roles/` directory, e.g. `your_custom_role.py`.
 2. Implement your custom role class in the module. The class must inherits from the above 2 classes and have `role` and `night_action` attributes as `ClassVar[str]`. You can implement your own night action method by overriding `act_in_night` method.
 
    Here are existing role classes in "langchain_werewolf/game_players/player_roles" for example, one is without `act_in_night` and the other is with `act_in_night` method overridden.
@@ -311,16 +311,6 @@ Follow the checklist first, then consult the detailed steps and code samples.
       Villager.__name__,
       Werewolf.__name__,
    ]
-
-   __auto_registered__ = [
-      FortuneTeller,
-      Knight,
-      Villager,
-      Werewolf,
-   ]
-
-   __all__.append(YourCustomRole.__name__)  # string names for docs & IDEs
-   __auto_registered__.append(YourCustomRole)  # actual classes for the registry
    ```
 
 4. Test your custom role applied to the game by check the CLI help message.
