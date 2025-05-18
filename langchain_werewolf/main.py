@@ -169,7 +169,7 @@ def attach_n_players_by_role_options(
         cli = click.option(
             f'--n-{role}',
             default=DEFAULT_GENERAL_CONFIG.n_players_by_role.get(role, 0),
-            help=f'The number of {role}s. Default is {DEFAULT_GENERAL_CONFIG.n_players_by_role.get(role, 0)}.',  # noqa
+            help=f'The number of players with {role=}. Default is {DEFAULT_GENERAL_CONFIG.n_players_by_role.get(role, 0)}.',  # noqa
         )(cli)
 
     return cli
