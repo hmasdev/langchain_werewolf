@@ -152,14 +152,18 @@ def delay_deco(
     """A decorator to delay the execution of a function
 
     Args:
-        func (Callable[P, T] | None, optional): the function to be decorated. Defaults to None.
-        seconds (float, optional): the delay in seconds. Defaults to 1.
+        func (Callable[P, T] | None, optional):
+            the function to be decorated. Defaults to None.
+        seconds (float, optional):
+            the delay in seconds. Defaults to 1.
 
     Returns:
-        Callable[[Callable[P, T]], Callable[P, T]] | Callable[P, T]: the decorated function
+        Callable[[Callable[P, T]], Callable[P, T]] | Callable[P, T]:
+            the decorated function
 
     Notes:
-        - If `func` is None, a deorator is returned. Otherwise, the decorated function is returned.
+        - If `func` is None, a deorator is returned.
+          Otherwise, the decorated function is returned.
     """
 
     if func is None:

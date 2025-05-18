@@ -24,8 +24,8 @@ def attach_prefix_to_prompt(
 
 _input_map: dict[EInputOutputType, Callable[[str], Any]] = {
     EInputOutputType.none: lambda _: None,
-    EInputOutputType.standard: delay_deco(attach_prefix_to_prompt(input), seconds=2),
-    EInputOutputType.click: delay_deco(attach_prefix_to_prompt(click.prompt), seconds=2),
+    EInputOutputType.standard: delay_deco(attach_prefix_to_prompt(input), seconds=2),  # noqa
+    EInputOutputType.click: delay_deco(attach_prefix_to_prompt(click.prompt), seconds=2),  # noqa
     # FIXME: fix the above `delay_deco`. This is a patch to avoid the conflict between the output and the input prompt.  # noqa
 }
 
