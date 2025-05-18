@@ -12,7 +12,9 @@ from langchain_werewolf.setup import generate_players
 # const
 WORKDIR: str = '.'
 EXAMPLES_DIR: str = 'examples'
+PACKAGE_DIR: str = 'langchain_werewolf'
 EXAMPLES_CONFIG_DIR: str = os.path.join(EXAMPLES_DIR, 'config')
+ROLE_IMPLEMENTATION_DIR: str = os.path.join(PACKAGE_DIR, 'game_players', 'player_roles')  # noqa
 README_TEMPLATE_NAME: str = 'README.md.j2'
 
 # vars
@@ -26,11 +28,16 @@ example_configs: list[dict[str, str | int | dict | list]] = [
     json.dumps(json.load(open(path)), indent=4)  # noqa
     for path in sorted(glob(os.path.join(EXAMPLES_CONFIG_DIR, '*.json')))
 ]
+role_implementations: dict[str, str] = {
+    os.path.basename(path).replace('.py', ''): open(path).read()
+    for path in glob(os.path.join(ROLE_IMPLEMENTATION_DIR, '*.py'))
+}
 
 # render
 print(readme.render(
     help=help,
     configs=example_configs,
+    role_implementations=role_implementations,
 ))
 
 with patch(
@@ -42,9 +49,7 @@ with patch(
     graph = create_game_graph(
         generate_players(
             DEFAULT_CONFIG.general.n_players,
-            DEFAULT_CONFIG.general.n_werewolves,
-            DEFAULT_CONFIG.general.n_knights,
-            DEFAULT_CONFIG.general.n_fortune_tellers,
+            DEFAULT_CONFIG.general.n_players_by_role,
             custom_players=DEFAULT_CONFIG.players,
             seed=DEFAULT_CONFIG.general.seed,
         ),
