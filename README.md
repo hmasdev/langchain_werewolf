@@ -80,12 +80,14 @@ Usage: python -m langchain_werewolf [OPTIONS]
 
 Options:
   -n, --n-players INTEGER         The number of players. Default is 4.
-  --n-werewolf INTEGER            The number of werewolfs. Default is 1.
-  --n-goodnight_villager INTEGER  The number of goodnight_villagers. Default
-                                  is 0.
-  --n-villager INTEGER            The number of villagers. Default is 0.
-  --n-knight INTEGER              The number of knights. Default is 0.
-  --n-fortuneteller INTEGER       The number of fortunetellers. Default is 0.
+  --n-werewolf INTEGER            The number of players with role='werewolf'.
+                                  Default is 1.
+  --n-villager INTEGER            The number of players with role='villager'.
+                                  Default is 0.
+  --n-knight INTEGER              The number of players with role='knight'.
+                                  Default is 0.
+  --n-fortuneteller INTEGER       The number of players with
+                                  role='fortuneteller'. Default is 0.
   -o, --output TEXT               The output file. Defaults to "".
   -l, --system-output-level TEXT  The output type of the CLI. ['all',
                                   'public', 'off'] and player names are valid.
