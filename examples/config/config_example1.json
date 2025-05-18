@@ -1,6 +1,11 @@
 {
     "general": {
-        "n_players": 4
+        "n_players": 5,
+        "n_players_by_role": {
+            "werewolf": 2,
+            "fortuneteller": 1,
+            "knight": 2
+        }
     },
     "game": {
         "daytime_chat_kwargs": {
