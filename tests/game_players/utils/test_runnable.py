@@ -4,7 +4,7 @@ from langchain_core.runnables import RunnableLambda
 import pytest
 from pytest_mock import MockerFixture
 from langchain_werewolf.game_players.base import GamePlayerRunnableInputModel
-from langchain_werewolf.game_players.helper import (
+from langchain_werewolf.game_players.utils.runnable import (
     _generate_game_player_runnable_based_on_runnable_lambda,
     _generate_game_player_runnable_based_on_chat_model,
     generate_game_player_runnable,

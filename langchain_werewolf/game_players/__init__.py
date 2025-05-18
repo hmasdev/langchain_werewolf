@@ -17,6 +17,7 @@ from .utils import (
     is_werewolf_role,
     is_werewolf_side,
 )
+from .utils.runnable import generate_game_player_runnable
 
 
 __all__ = [
@@ -28,6 +29,7 @@ __all__ = [
     find_player_by_name.__name__,
     find_players_by_role.__name__,
     find_players_by_side.__name__,
+    generate_game_player_runnable.__name__,
     is_player_with_side.__name__,
     is_player_with_role.__name__,
     is_valid_game_player.__name__,

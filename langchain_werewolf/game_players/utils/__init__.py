@@ -1,10 +1,10 @@
 from typing import Iterable, TypeGuard
 
-from .base import BaseGamePlayer, BaseGamePlayerRole, BasePlayerSideMixin
-from .const import WEREWOLF_ROLE, WEREWOLF_SIDE
-from ..models.state import StateModel, get_related_chat_histories
-from .registry import PlayerRoleRegistry, PlayerSideRegistry
-from ..utils import assert_not_empty_deco
+from ..base import BaseGamePlayer, BaseGamePlayerRole, BasePlayerSideMixin
+from ..const import WEREWOLF_ROLE, WEREWOLF_SIDE
+from ...models.state import StateModel, get_related_chat_histories
+from ..registry import PlayerRoleRegistry, PlayerSideRegistry
+from ...utils import assert_not_empty_deco
 
 
 def is_werewolf_role(

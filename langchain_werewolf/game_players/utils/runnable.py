@@ -8,8 +8,8 @@ from langchain_core.runnables import (
     RunnableLambda,
     RunnablePassthrough,
 )
-from .base import GamePlayerRunnableInputModel
-from ..models.state import MsgModel
+from ..base import GamePlayerRunnableInputModel
+from ...models.state import MsgModel
 
 
 runnable_routing_by_input_type: Runnable[
