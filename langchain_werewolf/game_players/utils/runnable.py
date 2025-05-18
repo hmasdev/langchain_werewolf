@@ -1,4 +1,3 @@
-from functools import partial
 from operator import attrgetter
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import SystemMessage, HumanMessage
@@ -18,7 +17,7 @@ runnable_routing_by_input_type: Runnable[
 ] = RunnableBranch(
     (
         lambda x: isinstance(x, str),
-        partial(GamePlayerRunnableInputModel, system_prompt=None),
+        lambda s: GamePlayerRunnableInputModel(prompt=s),
     ),
     RunnablePassthrough(),
 ).with_types(
