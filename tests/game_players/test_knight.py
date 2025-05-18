@@ -34,7 +34,6 @@ def test_knight_act_in_night(mocker: MockerFixture) -> None:
         [],
         StateModel(alive_players_names=[player.name]+[p.name for p in players]),  # noqa
     )
-    print(actual)
     # assert
     assert actual['safe_players_names'] == {expected_name}
     assert actual['chat_state']
