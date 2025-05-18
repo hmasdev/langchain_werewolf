@@ -83,7 +83,7 @@ def is_valid_game_player(
         player (BaseGamePlayer):
             an instance of a subclass of BaseGamePlayer representing a player.
 
-    Reurns:
+    Returns:
         bool:
             True if the player is a valid game player, that is, an instance
             inheriting from both BasePlayerSideMixin and BaseGamePlayerRole,
