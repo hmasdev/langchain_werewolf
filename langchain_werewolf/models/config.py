@@ -18,7 +18,6 @@ class GeneralConfig(BaseModel, frozen=True):
     output: str | None = Field(default=None, title='The output file. Defaults to None.')  # noqa
     system_output_level: ESystemOutputType | str | None = Field(default=None, title=f"The output type of the CLI. {list(ESystemOutputType.__members__.keys())} and player names are valid. Default is None.")  # noqa
     system_output_interface: Callable[[str], None] | EInputOutputType | None = Field(default=None, title="The system output interface. Default is None.")  # noqa
-    system_input_interface: Callable[[str], Any] | EInputOutputType | None = Field(default=None, title="The system input interface. Default is None.")  # noqa
     system_language: ELanguage | None = Field(default=None, title="The system language. Default is None.")  # noqa
     system_formatter: Callable[[MsgModel], str] | str | None = Field(default=None, title="The system formatter. The format should not include anything other than " + ', '.join('"{'+k+'}"' for k in MsgModel.model_fields.keys()))  # noqa
     system_font_color: str | None = Field(default=None, title="The system font color. Default is None.")  # noqa

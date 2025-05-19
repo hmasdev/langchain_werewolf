@@ -38,6 +38,7 @@ class ESystemOutputType(Enum):
 
 
 class EInputOutputType(Enum):
+    none = 'none'
     standard = 'standard'
     click = 'click'
 

@@ -1,0 +1,29 @@
+{
+    "general": {
+        "n_players": 5,
+        "n_players_by_role": {
+            "werewolf": 2,
+            "fortuneteller": 1,
+            "knight": 2
+        },
+        "system_output_interface": "none"
+    },
+    "game": {
+        "daytime_chat_kwargs": {
+            "n_turns_per_day": 2,
+            "select_speaker": "round_robin"
+        },
+        "nighttime_chat_kwargs": {
+            "n_turns_per_day": 2,
+            "select_speaker": "random"
+        }
+    },
+    "players": [
+        {
+            "name": "Me",
+            "player_input_interface": "click",
+            "player_output_interface": "click",
+            "language": "Japanese"
+        }
+    ]
+}

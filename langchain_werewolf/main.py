@@ -1,7 +1,7 @@
 from itertools import cycle
 import logging
 import random
-from typing import Any, Callable, Iterable
+from typing import Callable, Iterable
 import click
 from dotenv import load_dotenv
 from langchain.globals import set_verbose, set_debug
@@ -35,7 +35,6 @@ DEFAULT_CONFIG = Config(
         output='',
         system_output_level=ESystemOutputType.all,
         system_output_interface=EInputOutputType.standard,
-        system_input_interface=EInputOutputType.standard,
         system_language=BASE_LANGUAGE,
         system_formatter=None,
         system_font_color=CLI_PROMPT_COLOR,
@@ -56,7 +55,6 @@ def main(
     output: str = DEFAULT_GENERAL_CONFIG.output,  # type: ignore # noqa
     system_output_level:  ESystemOutputType | str = DEFAULT_GENERAL_CONFIG.system_output_level,  # type: ignore # noqa
     system_output_interface: Callable[[str], None] | EInputOutputType = DEFAULT_GENERAL_CONFIG.system_output_interface,  # type: ignore # noqa
-    system_input_interface: Callable[[str], Any] | EInputOutputType = DEFAULT_GENERAL_CONFIG.system_input_interface,  # type: ignore # noqa
     system_language: ELanguage | None = DEFAULT_GENERAL_CONFIG.system_language,  # type: ignore # noqa
     system_formatter: str | None = DEFAULT_GENERAL_CONFIG.system_formatter,  # type: ignore # noqa
     system_font_color: str | None = DEFAULT_GENERAL_CONFIG.system_font_color,  # type: ignore # noqa
@@ -89,7 +87,6 @@ def main(
             n_players_by_role=config.general.n_players_by_role if (config is not None and config.general.n_players_by_role is not None) else n_players_by_role,  # noqa
             output=config.general.output if (config is not None and config.general.output is not None) else output,  # noqa
             system_output_level=config.general.system_output_level if (config is not None and config.general.system_output_level is not None) else system_output_level,  # noqa
-            system_input_interface=config.general.system_input_interface if (config is not None and config.general.system_input_interface is not None) else system_input_interface,  # noqa
             system_output_interface=config.general.system_output_interface if (config is not None and config.general.system_output_interface is not None) else system_output_interface,  # noqa
             system_language=config.general.system_language if (config is not None and config.general.system_language is not None) else system_language,  # noqa
             system_formatter=config.general.system_formatter if (config is not None and config.general.system_formatter is not None) else system_formatter,  # noqa
@@ -118,7 +115,6 @@ def main(
         config_used.general.n_players_by_role,
         model=config_used.general.model,
         seed=config_used.general.seed,  # type: ignore
-        player_input_interface=config_used.general.system_input_interface,  # type: ignore # noqa
         custom_players=config_used.players,
     )
 
@@ -181,7 +177,6 @@ def attach_n_players_by_role_options(
 @click.option('-o', '--output', default=DEFAULT_GENERAL_CONFIG.output, help=f'The output file. Defaults to "{DEFAULT_GENERAL_CONFIG.output}".')  # noqa
 @click.option('-l', '--system-output-level', default=DEFAULT_GENERAL_CONFIG.system_output_level.name if isinstance(DEFAULT_GENERAL_CONFIG.system_output_level, ESystemOutputType) else DEFAULT_GENERAL_CONFIG.system_output_level, help=f'The output type of the CLI. {list(ESystemOutputType.__members__.keys())} and player names are valid. Default is All.')  # noqa
 @click.option('--system-output-interface', default=DEFAULT_GENERAL_CONFIG.system_output_interface.name if isinstance(DEFAULT_GENERAL_CONFIG.system_output_interface, EInputOutputType) else DEFAULT_GENERAL_CONFIG.system_output_interface, help=f'The system interface. Default is {DEFAULT_GENERAL_CONFIG.system_output_interface}.')  # noqa
-@click.option('--system-input-interface', default=DEFAULT_GENERAL_CONFIG.system_input_interface.name if isinstance(DEFAULT_GENERAL_CONFIG.system_input_interface, EInputOutputType) else DEFAULT_GENERAL_CONFIG.system_input_interface, help=f'The system interface. Default is {DEFAULT_GENERAL_CONFIG.system_input_interface}.')  # noqa
 @click.option('--system-formatter', default=DEFAULT_GENERAL_CONFIG.system_formatter, help=f'The system formatter. The format should not include anything other than ' + ', '.join('"{'+k+'}"' for k in MsgModel.model_fields.keys()) + '.')  # noqa
 @click.option('-c', '--config', default='', help='The configuration file. Defaults to "". Note that you can specify CLI arguments in this config file but the config file overwrite the CLI arguments.')  # noqa
 @click.option('--seed', default=DEFAULT_GENERAL_CONFIG.seed, help=f'The random seed. Defaults to {DEFAULT_GENERAL_CONFIG.seed}.')  # noqa
@@ -195,7 +190,6 @@ def cli(
     output: str = DEFAULT_GENERAL_CONFIG.output,  # type: ignore # noqa
     system_output_level:  str = DEFAULT_GENERAL_CONFIG.system_output_level.name,  # type: ignore # noqa
     system_output_interface: str = DEFAULT_GENERAL_CONFIG.system_output_interface.name,  # type: ignore # noqa
-    system_input_interface: str = DEFAULT_GENERAL_CONFIG.system_input_interface.name,  # type: ignore # noqa
     system_formatter: str = DEFAULT_GENERAL_CONFIG.system_formatter,  # type: ignore # noqa
     config: str = '',  # type: ignore # noqa
     seed: int = DEFAULT_GENERAL_CONFIG.seed,  # type: ignore # noqa
@@ -218,7 +212,6 @@ def cli(
         output=output,
         system_output_level=system_output_level,
         system_output_interface=system_output_interface,  # type: ignore
-        system_input_interface=EInputOutputType(system_input_interface),
         system_formatter=system_formatter,
         config=config,
         seed=seed,

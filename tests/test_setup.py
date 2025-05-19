@@ -308,7 +308,6 @@ def test_generate_players(mocker: MockerFixture) -> None:
         n_players,
         n_players_by_role,
         seed=0,
-        player_input_interface=EInputOutputType.standard,
         custom_players=custom_players,
     )
     assert len(actual) == n_players
@@ -344,7 +343,6 @@ def test_generate_players_with_custom_input_interface(mocker: MockerFixture) -> 
         n_players,
         n_players_by_role,
         seed=0,
-        player_input_interface=None,
         custom_players=custom_players,
     )
     # assert
@@ -397,10 +395,7 @@ def test__create_echo_runnable_by_player_whether_invoke_method_calls_formatter_a
     ], key=lambda msg: msg.timestamp)
     assert expected  # check not empty
     # execute
-    echo_runnable = _create_echo_runnable_by_player(
-        player=player,
-        color=None,
-    )
+    echo_runnable = _create_echo_runnable_by_player(player=player)
     echo_runnable.invoke(STATE4TEST)
     # assert
     output_mock.assert_has_calls(expected)
