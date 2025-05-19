@@ -92,7 +92,10 @@ def extract_name(
         max_retry (int, optional): The maximum number of retries. Defaults to 5.
 
     Returns:
-        str: _description_
+        str: The extracted name.
+
+    Raises:
+        langchain_core.exceptions.OutputParserException: If failed to parse the output.
     """  # noqa
     if chat_model is None:
         chat_model = ChatOpenAI(model='gpt-4o-mini')
