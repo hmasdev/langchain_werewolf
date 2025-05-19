@@ -94,8 +94,6 @@ Options:
                                   Default is All.
   --system-output-interface TEXT  The system interface. Default is
                                   EInputOutputType.standard.
-  --system-input-interface TEXT   The system interface. Default is
-                                  EInputOutputType.standard.
   --system-formatter TEXT         The system formatter. The format should not
                                   include anything other than "{name}",
                                   "{timestamp}", "{message}",
@@ -137,6 +135,40 @@ You can also another options in the configuration json file like the followings:
             "select_speaker": "random"
         }
     }
+}
+```
+
+
+
+```json
+{
+    "general": {
+        "n_players": 5,
+        "n_players_by_role": {
+            "werewolf": 2,
+            "fortuneteller": 1,
+            "knight": 2
+        },
+        "system_output_interface": "none"
+    },
+    "game": {
+        "daytime_chat_kwargs": {
+            "n_turns_per_day": 2,
+            "select_speaker": "round_robin"
+        },
+        "nighttime_chat_kwargs": {
+            "n_turns_per_day": 2,
+            "select_speaker": "random"
+        }
+    },
+    "players": [
+        {
+            "name": "Me",
+            "player_input_interface": "click",
+            "player_output_interface": "click",
+            "language": "Japanese"
+        }
+    ]
 }
 ```
 
@@ -235,9 +267,9 @@ Follow the checklist first, then consult the detailed steps and code samples.
    ```python
    import json
     from typing import ClassVar, Iterable
+    from langchain_core.exceptions import OutputParserException
     from pydantic import Field
     from ..base import BaseGamePlayer, BaseGamePlayerRole
-    from ..helper import runnable_str2game_player_runnable_input
     from ..player_sides import VillagerSideMixin
     from ..registry import PlayerRoleRegistry
     from ..utils import is_werewolf_role
@@ -248,7 +280,7 @@ Follow the checklist first, then consult the detailed steps and code samples.
         StateModel,
         create_dict_to_record_chat,
     )
-    from ...utils import find_player_by_name
+    from ..utils import find_player_by_name
     
     
     @PlayerRoleRegistry.register
@@ -272,12 +304,19 @@ Follow the checklist first, then consult the detailed steps and code samples.
                 prompt=self.question_to_decide_night_action,
                 system_prompt=json.dumps([m.model_dump() for m in messages]),
             )
-            target_player_name = extract_name(
-                target_player_name_raw.message,
-                [p.name for p in players if p.name in state.alive_players_names],  # noqa
-                context=f'Extract the valid name of the player as the answer to "{self.question_to_decide_night_action}"',  # noqa
-                chat_model=runnable_str2game_player_runnable_input | self.runnable,  # noqa
-            )
+            try:
+                target_player_name = extract_name(
+                    target_player_name_raw.message,
+                    [p.name for p in players if p.name in state.alive_players_names],  # noqa
+                    context=f'Extract the valid name of the player as the answer to "{self.question_to_decide_night_action}"',  # noqa
+                    chat_model=self.runnable,
+                )
+            except OutputParserException:
+                return create_dict_to_record_chat(  # type: ignore # noqa
+                    self.name,
+                    [GAME_MASTER_NAME],
+                    'Failed to decide the target player.',
+                )
             try:
                 target_player = find_player_by_name(target_player_name, players)
                 return create_dict_to_record_chat(  # type: ignore # noqa
