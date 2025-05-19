@@ -94,8 +94,6 @@ Options:
                                   Default is All.
   --system-output-interface TEXT  The system interface. Default is
                                   EInputOutputType.standard.
-  --system-input-interface TEXT   The system interface. Default is
-                                  EInputOutputType.standard.
   --system-formatter TEXT         The system formatter. The format should not
                                   include anything other than "{name}",
                                   "{timestamp}", "{message}",
@@ -137,6 +135,40 @@ You can also another options in the configuration json file like the followings:
             "select_speaker": "random"
         }
     }
+}
+```
+
+
+
+```json
+{
+    "general": {
+        "n_players": 5,
+        "n_players_by_role": {
+            "werewolf": 2,
+            "fortuneteller": 1,
+            "knight": 2
+        },
+        "system_output_interface": "none"
+    },
+    "game": {
+        "daytime_chat_kwargs": {
+            "n_turns_per_day": 2,
+            "select_speaker": "round_robin"
+        },
+        "nighttime_chat_kwargs": {
+            "n_turns_per_day": 2,
+            "select_speaker": "random"
+        }
+    },
+    "players": [
+        {
+            "name": "Me",
+            "player_input_interface": "click",
+            "player_output_interface": "click",
+            "language": "Japanese"
+        }
+    ]
 }
 ```
 
