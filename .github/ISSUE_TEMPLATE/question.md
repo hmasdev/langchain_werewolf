@@ -1,7 +1,7 @@
 ---
 name: Question
 about: Create an issue where you can ask a question
-title: ''
+title: '[question] '
 labels: question
 assignees: ''
 
