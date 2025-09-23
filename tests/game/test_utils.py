@@ -102,7 +102,7 @@ def test_add_echo_node_for_callable_echo(
     echo_spy = mocker.spy(echo, 'echo')
     # execution
     graph_with_echo = add_echo_node(graph, node, echo=echo.echo).compile()
-    graph_with_echo.invoke(StateModel(alive_players_names=[]))
+    graph_with_echo.invoke(StateModel(alive_players_names=[]))  # type: ignore
     # assert
     assert echo_spy.call_count == len(nodes)
 
@@ -128,7 +128,7 @@ def test_add_echo_node_for_runnable_echo(
     echo_spy = mocker.spy(echo, 'invoke')
     # execution
     graph_with_echo = add_echo_node(graph, node, echo=echo).compile()
-    graph_with_echo.invoke(StateModel(alive_players_names=[]))
+    graph_with_echo.invoke(StateModel(alive_players_names=[]))  # type: ignore
     # assert
     assert echo_spy.call_count == 1
 
@@ -141,4 +141,4 @@ def test_add_echo_node_with_node_not_found() -> None:
     graph.add_edge('node1', END)
     # execution
     graph_with_echo = add_echo_node(graph, ['node1', 'node2'], echo=lambda x: print(x)).compile()  # noqa
-    graph_with_echo.invoke(StateModel(alive_players_names=[]))
+    graph_with_echo.invoke(StateModel(alive_players_names=[]))  # type: ignore
