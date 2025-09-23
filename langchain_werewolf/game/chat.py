@@ -3,7 +3,7 @@ from itertools import cycle
 from typing import Callable, Generator, Iterable, Literal
 
 from langchain_core.runnables import Runnable
-from langgraph.graph import END, START, Graph, StateGraph
+from langgraph.graph import END, START, StateGraph
 from pydantic import BaseModel, Field
 
 from ..const import GAME_MASTER_NAME
@@ -160,14 +160,14 @@ def create_run_chat_subbraph(
         CHAT_NODE_NAME,
     ],
     echo: Callable[[StateModel], None] | Runnable[StateModel, None] | None = None,  # noqa
-) -> Graph:
+) -> StateGraph:
 
     if isinstance(select_speaker, ESpeakerSelectionMethod):
         select_speaker = speaker_selection_methods[select_speaker]
     speaker_generator = select_speaker([p.name for p in players])
 
     # define the graph
-    workflow: Graph = StateGraph(StateModel)
+    workflow: StateGraph = StateGraph(StateModel)
     # define nodes
     workflow.add_node(
         CHAT_TEARUP_NODE_NAME,
@@ -248,7 +248,7 @@ def create_run_daytime_chat_subgraph(
         CHAT_NODE_NAME,
     ],
     display: Callable[[StateModel], None] | Runnable[StateModel, None] | None = None,  # noqa
-) -> Graph:
+) -> StateGraph:
     return create_run_chat_subbraph(
         players,
         prompt,
@@ -278,7 +278,7 @@ def create_run_nighttime_chat_subgraph(
         CHAT_NODE_NAME,
     ],
     display: Callable[[StateModel], None] | Runnable[StateModel, None] | None = None,  # noqa
-) -> Graph:
+) -> StateGraph:
     # Check if `werewolves` contains only werewolf players
     invalid_players = [player.name for player in werewolves if not is_werewolf_role(player)]  # noqa
     if invalid_players:

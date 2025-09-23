@@ -5,7 +5,7 @@ from typing import Callable, Iterable, Literal
 
 from langchain_core.language_models import BaseChatModel
 from langchain_core.runnables import Runnable, RunnableBranch, RunnableLambda
-from langgraph.graph import END, START, Graph, StateGraph
+from langgraph.graph import END, START, StateGraph
 from pydantic import BaseModel, Field, field_validator
 
 from ..const import GAME_MASTER_NAME, DEFAULT_MODEL
@@ -151,7 +151,7 @@ def _create_run_vote_subgraph(
     ]] = [],
     echo: Callable[[StateModel], None] | Runnable[StateModel, None] | None = None,  # noqa
     logger: Logger = getLogger(__name__),
-) -> Graph:
+) -> StateGraph:
     # preprocess prompt
     prompt_func: Callable[[GeneratePromptInputForVote], str]
     if callable(prompt):
@@ -164,7 +164,7 @@ def _create_run_vote_subgraph(
     else:
         def system_prompt_func(m): return system_prompt.format(**m.model_dump())  # noqa
     # define the graph
-    workflow: Graph = StateGraph(StateModel)
+    workflow: StateGraph = StateGraph(StateModel)
     # define nodes and edges
     workflow.add_node(
         VOTE_TEARUP_NODE_NAME,
@@ -232,7 +232,7 @@ def create_vote_daytime_vote_subgraph(
     ]] = [],
     echo: Callable[[StateModel], None] | Runnable[StateModel, None] | None = None,  # noqa
     logger: Logger = getLogger(__name__),
-) -> Graph:
+) -> StateGraph:
     return _create_run_vote_subgraph(
         players,
         ETimeSpan.day,
@@ -259,7 +259,7 @@ def create_vote_night_vote_subgraph(
     ]] = [],
     echo: Callable[[StateModel], None] | Runnable[StateModel, None] | None = None,  # noqa
     logger: Logger = getLogger(__name__),
-) -> Graph:
+) -> StateGraph:
     return _create_run_vote_subgraph(
         werewolves,
         ETimeSpan.night,

@@ -1,7 +1,7 @@
 from logging import getLogger, Logger
 from typing import Callable, Iterable
 from langchain_core.runnables import Runnable, RunnableLambda
-from langgraph.graph import Graph, END
+from langgraph.graph import END, StateGraph
 from ..models.state import (
     MsgModel,
     StateModel,
@@ -20,13 +20,13 @@ def create_message_history_prompt(
 
 
 def add_echo_node(
-    workflow: Graph,
+    workflow: StateGraph,
     node: str | Iterable[str],
     echo: Callable[[StateModel], None] | Runnable[StateModel, None] | None = None,  # noqa
     echo_node_name: str = '_echo_',
     next_node: str = END,
     logger: Logger = getLogger(__name__),
-) -> Graph:
+) -> StateGraph:
     if echo is None:
         return workflow
     if not node:
