@@ -1,7 +1,7 @@
 from functools import partial
 from typing import Callable, Literal, Iterable
 from langchain_core.runnables import Runnable
-from langgraph.graph import Graph, StateGraph, START, END
+from langgraph.graph import StateGraph, START, END
 from ..const import GAME_MASTER_NAME
 from ..enums import EResult
 from ..game_players import (
@@ -65,9 +65,9 @@ def create_check_victory_condition_subgraph(
         REVEAL_ROLES_NODE_NAME,
     ],
     echo: Callable[[StateModel], None] | Runnable[StateModel, None] | None = None,  # noqa
-) -> Graph:
+) -> StateGraph:
     # define the graph
-    workflow: Graph = StateGraph(StateModel)
+    workflow: StateGraph = StateGraph(StateModel)
 
     # define nodes
     workflow.add_node(

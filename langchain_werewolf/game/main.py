@@ -1,8 +1,8 @@
 from operator import attrgetter
 from typing import Iterable, Callable
 from langchain_core.runnables import Runnable, RunnableLambda, RunnableParallel
-from langgraph.graph import Graph, StateGraph, START, END
-from langgraph.graph.graph import CompiledGraph
+from langgraph.graph import StateGraph, START, END
+from langgraph.graph.state import CompiledStateGraph
 from ..enums import ETimeSpan
 from ..game_players import (
     BaseGamePlayerRole,
@@ -40,7 +40,7 @@ def create_game_graph(
     elimination_after_daytime_vote_kwargs: dict[str, object] = {},
     elimination_after_night_vote_kwargs: dict[str, object] = {},
     echo: Runnable[StateModel, None] | Callable[[StateModel], None] | None = None,  # noqa
-) -> CompiledGraph:
+) -> CompiledStateGraph:
     # preparation
     players = list(players)
     werewolves = [
@@ -48,7 +48,7 @@ def create_game_graph(
         if is_werewolf_role(player)
     ]
     # define the graph
-    workflow: Graph = StateGraph(StateModel)
+    workflow: StateGraph = StateGraph(StateModel)
     # add nodes
     workflow.add_node(
         'game_preparation',

@@ -1,7 +1,7 @@
 from functools import partial
 from typing import Iterable, Callable, Literal
 from langchain_core.runnables import Runnable
-from langgraph.graph import Graph, StateGraph, START, END
+from langgraph.graph import StateGraph, START, END
 from pydantic import BaseModel, Field
 from ..const import GAME_MASTER_NAME
 from ..game_players import (
@@ -104,7 +104,7 @@ def create_villagers_night_action_subgraph(
         MASTER_ASK_PLAYER_TO_ACT_NODE_NAME_TEMPLATE,
     ],
     echo: Callable[[StateModel], None] | Runnable[StateModel, None] | None = None,  # noqa
-) -> Graph:
+) -> StateGraph:
     # init
     if MASTER_ASK_PLAYER_TO_ACT_NODE_NAME_TEMPLATE in echo_targets:
         echo_targets = list(echo_targets)
@@ -114,7 +114,7 @@ def create_villagers_night_action_subgraph(
         ])
         echo_targets.remove(MASTER_ASK_PLAYER_TO_ACT_NODE_NAME_TEMPLATE)
     # define the graph
-    workflow: Graph = StateGraph(StateModel)
+    workflow: StateGraph = StateGraph(StateModel)
     # define nodes and edges
     workflow.add_node(
         NIGHT_ACTION_TEARUP_NODE_NAME,

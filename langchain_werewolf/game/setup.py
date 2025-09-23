@@ -2,7 +2,7 @@ from collections import Counter
 from functools import partial
 from typing import Callable, Iterable, Literal
 from langchain_core.runnables import Runnable
-from langgraph.graph import Graph, StateGraph, START, END
+from langgraph.graph import StateGraph, START, END
 from ..const import GAME_MASTER_NAME, PACKAGE_NAME
 from ..game_players import (
     BaseGamePlayerRole,
@@ -131,7 +131,7 @@ def create_game_preparation_graph(
         WELCOME_NODE_NAME,
     ],
     echo: Callable[[StateModel], None] | Runnable[StateModel, None] | None = None,  # noqa
-) -> Graph:
+) -> StateGraph:
     # init
     # replace template node name with specific node names
     if ROLE_ANNOUNCE_NODE_NAME_TEMPLATE in echo_targets:
@@ -142,7 +142,7 @@ def create_game_preparation_graph(
         ])
         echo_targets.remove(ROLE_ANNOUNCE_NODE_NAME_TEMPLATE)
     # define the graph
-    workflow: Graph = StateGraph(StateModel)
+    workflow: StateGraph = StateGraph(StateModel)
     # add nodes and edges
     workflow.add_node(
         WELCOME_NODE_NAME,

@@ -1,7 +1,7 @@
 from collections import Counter
 from typing import Iterable, Callable, Literal
 from langchain_core.runnables import Runnable
-from langgraph.graph import Graph, StateGraph, START, END
+from langgraph.graph import StateGraph, START, END
 from ..const import GAME_MASTER_NAME
 from ..enums import ETimeSpan
 from ..game_players import BaseGamePlayerRole
@@ -87,9 +87,9 @@ def create_elimination_subgraph(
         ELIMINATE_NODE_NAME,
     ],
     echo: Callable[[StateModel], None] | Runnable[StateModel, None] | None = None,  # noqa
-) -> Graph:
+) -> StateGraph:
     # define the graph
-    workflow: Graph = StateGraph(StateModel)
+    workflow: StateGraph = StateGraph(StateModel)
     # define nodes
     workflow.add_node(ELIMINATE_TEARUP_NODE_NAME, create_dict_without_state_updated)  # noqa
     workflow.add_node(ELIMINATE_TEARDOWN_NODE_NAME, create_dict_without_state_updated)  # noqa

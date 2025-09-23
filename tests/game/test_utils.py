@@ -1,6 +1,6 @@
 from datetime import datetime as dt
 from typing import Callable
-from langgraph.graph import Graph, START, END, StateGraph
+from langgraph.graph import START, END, StateGraph
 from langchain_core.runnables import (
     RunnableLambda,
     RunnablePassthrough,
@@ -49,7 +49,7 @@ def test_create_message_history_prompt(
 
 def test_add_echo_node_with_echo_being_none() -> None:
     # preparation
-    graph = Graph()
+    graph = StateGraph(StateModel)
     # execution
     graph_with_echo = add_echo_node(graph, 'dummy', echo=None)
     # assert
@@ -67,7 +67,7 @@ def test_add_echo_node_with_node_empty(
     node: str | list[str],
 ) -> None:
     # preparation
-    graph = Graph()
+    graph = StateGraph(StateModel)
     # execution
     graph_with_echo = add_echo_node(graph, node, echo=lambda x: print(x))
     # assert
