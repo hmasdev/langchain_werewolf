@@ -4,7 +4,7 @@ import random
 from typing import Callable, Iterable
 import click
 from dotenv import load_dotenv
-from langchain.globals import set_verbose, set_debug
+from langchain_core.globals import set_verbose, set_debug
 import pydantic
 from .const import BASE_LANGUAGE, CLI_PROMPT_COLOR, CLI_ECHO_COLORS
 from .enums import ESystemOutputType, EInputOutputType, ELanguage

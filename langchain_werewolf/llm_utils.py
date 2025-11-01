@@ -2,12 +2,11 @@ from enum import Enum
 from functools import lru_cache
 from logging import Logger, getLogger
 from operator import attrgetter
-from langchain.output_parsers import (
+from langchain_core.output_parsers import (
     EnumOutputParser,
     RetryWithErrorOutputParser,
 )
-
-from langchain.output_parsers.retry import NAIVE_RETRY_WITH_ERROR_PROMPT
+from langchain_core.output_parsers.retry import NAIVE_RETRY_WITH_ERROR_PROMPT
 from langchain_core.prompts import PromptTemplate
 from langchain_core.prompt_values import StringPromptValue
 from langchain_core.runnables import (
