@@ -6,8 +6,9 @@ from langchain_classic.output_parsers import (
     EnumOutputParser,
     RetryWithErrorOutputParser,
 )
-
-from langchain_classic.output_parsers.retry import NAIVE_RETRY_WITH_ERROR_PROMPT
+from langchain_classic.output_parsers.retry import (
+    NAIVE_RETRY_WITH_ERROR_PROMPT,
+)
 from langchain_core.prompts import PromptTemplate
 from langchain_core.prompt_values import StringPromptValue
 from langchain_core.runnables import (
